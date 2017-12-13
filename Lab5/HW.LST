@@ -1,0 +1,93 @@
+Turbo Assembler	 Version 4.1	    03/08/16 16:11:56	    Page 1
+HW.asm
+
+
+
+      1				     ;STACK_SEG	SEGMENT	STACK USE16
+      2				     ;DB 100 DUP(?)
+      3				     ;STACK_SEG	ENDS
+      4	0000			     .model small
+      5	0000			     .stack 100h
+      6
+      7
+      8	0000			     .DATA
+      9	0000  0D 0A 24		     NEWLINE DB	0DH,0AH,'$'
+     10	0003  54 68 65 20 6D 6F	64+  MESSAGE1 DB 'The modified string is: $'
+     11	      69 66 69 65 64 20	73+
+     12	      74 72 69 6E 67 20	69+
+     13	      73 3A 20 24
+     14	001C  41 42 43 44 45 46	47+  STRING DB 'ABCDEFGHIJ','$'
+     15	      48 49 4A 24
+     16	0027			     .CODE
+     17				      .STARTUP
+1    18	0000			     @Startup:
+1    19	0000  BA 0000s			     MOV     DX,@data
+1    20	0003  8E DA			     MOV     DS,DX
+1    21	0005  8C D3			     MOV     BX,SS
+1    22	0007  2B DA			     SUB     BX,DX
+1    23	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     24	      E3
+1    25	0011  FA			     CLI
+1    26	0012  8E D2			     MOV     SS,DX
+1    27	0014  03 E3			     ADD     SP,BX
+1    28	0016  FB			     STI
+     29	0017			     MAIN PROC FAR
+     30				     ;setup
+     31	0017  BE 0025r		     LEA SI, STRING+9
+     32	001A  BF 0023r		     LEA DI, STRING+7
+     33	001D  FD		     STD
+     34	001E  06		     PUSH ES
+     35	001F  1E		     PUSH DS
+     36	0020  07		     POP ES
+     37	0021  A4		     MOVSB
+     38	0022  A4		     MOVSB
+     39	0023  A4		     MOVSB
+     40	0024  07		     POP ES
+     41	0025  BA 0003r		     LEA DX,MESSAGE1 ;PRINT MESSAGE
+     42	0028  B4 09		     MOV AH,9
+     43	002A  CD 21		     INT 21H
+     44	002C  BA 001Cr		     LEA DX,STRING ;PRINT MESSAGE
+     45	002F  B4 09		     MOV AH,9
+     46	0031  CD 21		     INT 21H
+     47				     .EXIT
+1    48	0033  B4 4C			     MOV     AH,4Ch
+1    49	0035  CD 21			     INT     21h
+     50	0037			     MAIN ENDP
+     51				     END
+Turbo Assembler	 Version 4.1	    03/08/16 16:11:56	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/08/16"
+??FILENAME			  Text	 "HW	  "
+??TIME				  Text	 "16:11:56"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 HW
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 _TEXT:0000
+@WORDSIZE			  Text	 2
+MAIN				  Far	 _TEXT:0017
+MESSAGE1			  Byte	 DGROUP:0003
+NEWLINE				  Byte	 DGROUP:0000
+STRING				  Byte	 DGROUP:001C
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  0027 Word	  Public  DATA
+_TEXT				  16  0037 Word	  Public  CODE
+

@@ -1,0 +1,90 @@
+Turbo Assembler	 Version 4.1	    02/09/16 13:06:08	    Page 1
+Lab1a.ASM
+
+
+
+      1
+      2				     ;PROGRAM 1	OF LAB 1
+      3				     ;FILENAME:	lab1a.asm
+      4				     ;FILE FORMAT: COM
+      5	0000			     .MODEL TINY
+      6
+      7	0000			     .DATA
+      8
+      9	0000  45 43 45 33 32 31	30+	     MESSAGE DB	'ECE3210 LAB1',0DH,0AH
+     10	      20 4C 41 42 31 0D	0A
+     11	000E  45 4E 54 45 52 20	41+	     DB	'ENTER A CHARACTER FROM	KEYBORD: $'
+     12	      20 43 48 41 52 41	43+
+     13	      54 45 52 20 46 52	4F+
+     14	      4D 20 4B 45 59 42	4F+
+     15	      52 44 3A 20 24
+     16	002F  0D 0A 54 48 45 20	43+	     OUTMSG DB 0DH,0AH,'THE CHARACTER YOU JUST ENTERED IS $'
+     17	      48 41 52 41 43 54	45+
+     18	      52 20 59 4F 55 20	4A+
+     19	      55 53 54 20 45 4E	54+
+     20	      45 52 45 44 20 49	53+
+     21	      20 24
+     22	0054  ??			     INCHAR DB ?
+     23	0055  0D 0A 24			     NEWLINE DB	0DH,0AH,'$'
+     24
+     25	0058			     .CODE
+     26					     .STARTUP		     ;INITIALIZE THE PROGRAM
+1    27	0100			     @Startup:
+     28
+     29	0100  BA 0000r			     LEA DX,MESSAGE ;PRINT A MESSAGE
+     30	0103  B4 09			     MOV AH,9
+     31	0105  CD 21			     INT 21H
+     32	0107  B4 01			     MOV AH,1	     ;READ A CHARACTER FROM KEYBOARD
+     33
+     34	0109  CD 21			     INT 21H
+     35	010B  A2 0054r			     MOV INCHAR,AL
+     36	010E  BA 002Fr			     LEA DX,OUTMSG   ;PRINT A MESSAGE
+     37	0111  B4 09			     MOV AH,9
+     38	0113  CD 21			     INT 21H
+     39	0115  8A 16 0054r		     MOV DL,INCHAR   ;OUTPUT A CHARACTER TO THE	SCREEN
+     40
+     41	0119  B4 02			     MOV AH,2
+     42	011B  CD 21			     INT 21H
+     43	011D  BA 0055r			     MOV DX,OFFSET NEWLINE
+     44	0120  B4 09			     MOV AH,9  ;MOVE CURSOR TO NEXT LINE
+     45	0122  CD 21			     INT 21H
+     46					     .EXIT
+1    47	0124  B4 4C			     MOV     AH,4Ch
+1    48	0126  CD 21			     INT     21h
+     49				     END
+Turbo Assembler	 Version 4.1	    02/09/16 13:06:08	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/09/16"
+??FILENAME			  Text	 "Lab1a	  "
+??TIME				  Text	 "13:06:08"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 LAB1A
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 DGROUP:0100
+@WORDSIZE			  Text	 2
+INCHAR				  Byte	 DGROUP:0054
+MESSAGE				  Byte	 DGROUP:0000
+NEWLINE				  Byte	 DGROUP:0055
+OUTMSG				  Byte	 DGROUP:002F
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0058 Word	  Public  DATA
+  _TEXT				  16  0128 Word	  Public  CODE
+

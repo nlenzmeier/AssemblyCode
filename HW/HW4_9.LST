@@ -1,0 +1,108 @@
+Turbo Assembler	 Version 4.1	    03/23/16 16:36:50	    Page 1
+hw4_9.asm
+
+
+
+      1	0000			     .MODEL MEDIUM
+      2
+      3	0000			     .STACK 100H
+      4
+      5	0000			     .DATA
+      6	0000  0005		     X DW 5
+      7	0002  000A		     Y DW 10
+      8	0004  02*(????)		     RESULT DW	2 DUP(?)
+      9
+     10	0008			     .CODE
+     11					  .STARTUP
+1    12	0000			     @Startup:
+1    13	0000  BA 0000s			     MOV     DX,@data
+1    14	0003  8E DA			     MOV     DS,DX
+1    15	0005  8C D3			     MOV     BX,SS
+1    16	0007  2B DA			     SUB     BX,DX
+1    17	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     18	      E3
+1    19	0011  FA			     CLI
+1    20	0012  8E D2			     MOV     SS,DX
+1    21	0014  03 E3			     ADD     SP,BX
+1    22	0016  FB			     STI
+     23	0017			     MAIN     PROC FAR
+     24
+     25	0017  B8 0000s			      MOV AX, @DATA
+     26	001A  8E D8			      MOV DS, AX
+     27	001C  8E C0			      MOV ES, AX
+     28
+     29	001E  FF 36 0000r		      PUSH X
+     30	0022  FF 36 0002r		      PUSH Y
+     31	0026  E8 000B			      CALL FCTN1
+     32	0029  A3 0004r			      MOV RESULT, AX
+     33	002C  89 16 0006r		      MOV RESULT[2], DX
+     34
+     35					      .EXIT
+1    36	0030  B4 4C			     MOV     AH,4Ch
+1    37	0032  CD 21			     INT     21h
+     38	0034			     MAIN ENDP
+     39
+     40				     ;PROCEDURE: INT FCTN1(INT X, INT Y)
+     41				     ;RETURNS 3*X+7*Y IN DX-AX
+     42
+     43	0034			     FCTN1 PROC	near
+     44
+     45	0034  54			   PUSH	SP
+     46	0035  8B EC			   MOV BP, SP
+     47	0037  8B 46 06			   MOV AX, [BP+6]
+     48	003A  BB 0003			   MOV BX, 3
+     49	003D  F7 E3			   MUL BX
+     50	003F  8B D8			   MOV BX, AX
+     51	0041  8B 46 04			   MOV AX, [BP+4]
+     52	0044  B9 0007			   MOV CX, 7
+     53	0047  F7 E1			   MUL CX
+     54	0049  03 C3			   ADD AX, BX
+     55	004B  5C			   POP SP
+     56	004C  C3			   RET
+     57
+Turbo Assembler	 Version 4.1	    03/23/16 16:36:50	    Page 2
+hw4_9.asm
+
+
+
+     58	004D			     FCTN1 ENDP
+     59
+     60				     END
+Turbo Assembler	 Version 4.1	    03/23/16 16:36:50	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/23/16"
+??FILENAME			  Text	 "hw4_9	  "
+??TIME				  Text	 "16:36:50"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 HW4_9_TEXT
+@CODESIZE			  Text	 1
+@CPU				  Text	 0101H
+@CURSEG				  Text	 HW4_9_TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 HW4_9
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 4
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 HW4_9_TEXT:0000
+@WORDSIZE			  Text	 2
+FCTN1				  Near	 HW4_9_TEXT:0034
+MAIN				  Far	 HW4_9_TEXT:0017
+RESULT				  Word	 DGROUP:0004
+X				  Word	 DGROUP:0000
+Y				  Word	 DGROUP:0002
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  0008 Word	  Public  DATA
+HW4_9_TEXT			  16  004D Word	  Public  CODE
+

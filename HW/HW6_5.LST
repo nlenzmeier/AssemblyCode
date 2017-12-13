@@ -1,0 +1,114 @@
+Turbo Assembler	 Version 4.1	    04/06/16 23:56:10	    Page 1
+hw6_5.ASM
+
+
+
+      1	0000			     .MODEL MEDIUM
+      2
+      3	0000			     .STACK 100H
+      4
+      5	0000			     .data
+      6	0000  ????			  k dw ?
+      7	0002  01F4*(??)			  p db 500 dup (?)
+      8
+      9	01F6			     .code
+     10				     .startup
+1    11	0000			     @Startup:
+1    12	0000  BA 0000s			     MOV     DX,@data
+1    13	0003  8E DA			     MOV     DS,DX
+1    14	0005  8C D3			     MOV     BX,SS
+1    15	0007  2B DA			     SUB     BX,DX
+1    16	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     17	      E3
+1    18	0011  FA			     CLI
+1    19	0012  8E D2			     MOV     SS,DX
+1    20	0014  03 E3			     ADD     SP,BX
+1    21	0016  FB			     STI
+     22
+     23	0017			     MAIN proc far
+     24	0017  B8 0000s			  mov ax, @data		     ;initialize ds
+     25	001A  8E D8			  mov ds, ax
+     26	001C  8E C0			  mov es, ax
+     27
+     28	001E  B8 0000			  mov ax, 0
+     29	0021  BE 0002r			  mov si, offset p	     ;point si to p
+     30	0024  8B 0E 0000r		  mov cx, k		     ;have k equal to cx
+     31
+     32	0028			     LOOP1:
+     33	0028  8B 04			  mov ax, [si]		     ;copy the byte pointer to by si into ah
+     34								     ;i.e. "read
+     35
+     36	002A  3D 012C			  cmp ax, 300d		     ;if(p[k]<300)
+     37	002D  72 15			  jb LESS		     ;go to less
+     38	002F  2B C1			  sub ax, cx		     ;ELSE p[k]	= p[k] - k
+     39	0031  89 04			  mov [si], ax
+     40	0033  83 C6 02			  add si, 2		     ;moves si to next "element"
+     41	0036  41			  inc cx		     ;k++
+     42	0037  89 0E 0000r		  mov k, cx		     ;moves value of cx	to k
+     43	003B  81 F9 01F4		  cmp cx, 500		     ;sees if cx is greater or equal to	500
+     44	003F  75 E7			  jne loop1		     ;if not, loop again
+     45	0041  EB 13 90			  jmp FINISH		     ;else, finish
+     46
+     47	0044			     LESS:
+     48	0044  03 C1			  add ax, cx		    ;p[k] = p[k] + k
+     49	0046  89 04			  mov [si], ax
+     50	0048  83 C6 02			  add si, 2		    ;moves si to next "element"
+     51	004B  41			  inc cx		    ;k++
+     52	004C  89 0E 0000r		  mov k, cx		    ;moves value of cx to k
+     53	0050  81 F9 01F4		  cmp cx, 500		    ;sees if cx	is great or equal to 500
+     54	0054  75 D2			  jne loop1		    ;if	not, loop again
+     55
+     56	0056			     FINISH:
+     57	0056  B4 4C			  mov ah, 4ch		       ;exit to	dos
+Turbo Assembler	 Version 4.1	    04/06/16 23:56:10	    Page 2
+hw6_5.ASM
+
+
+
+     58	0058  CD 21			  int 21h
+     59					  .exit
+1    60	005A  B4 4C			     MOV     AH,4Ch
+1    61	005C  CD 21			     INT     21h
+     62
+     63	005E			     MAIN endp
+     64
+     65				     END
+Turbo Assembler	 Version 4.1	    04/06/16 23:56:10	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "04/06/16"
+??FILENAME			  Text	 "hw6_5	  "
+??TIME				  Text	 "23:56:10"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 HW6_5_TEXT
+@CODESIZE			  Text	 1
+@CPU				  Text	 0101H
+@CURSEG				  Text	 HW6_5_TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 HW6_5
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 4
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 HW6_5_TEXT:0000
+@WORDSIZE			  Text	 2
+FINISH				  Near	 HW6_5_TEXT:0056
+K				  Word	 DGROUP:0000
+LESS				  Near	 HW6_5_TEXT:0044
+LOOP1				  Near	 HW6_5_TEXT:0028
+MAIN				  Far	 HW6_5_TEXT:0017
+P				  Byte	 DGROUP:0002
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  01F6 Word	  Public  DATA
+HW6_5_TEXT			  16  005E Word	  Public  CODE
+

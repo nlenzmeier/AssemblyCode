@@ -1,0 +1,287 @@
+Turbo Assembler	 Version 4.1	    03/08/16 11:20:17	    Page 1
+calc.asm
+
+
+
+      1	0000				 STACK_SEG SEGMENT STACK USE16
+      2	0000  64*(??)		     DB	100 DUP(?)
+      3	0064			     STACK_SEG ENDS
+      4
+      5	0000			     DATA_SEG SEGMENT 'DATA' USE16
+      6
+      7	0000  09*(02)		     SYM1   DB 9 DUP (02H)
+      8	0009  00		     TAB   DB 0
+      9	000A  16*(02)		     SYM2   DB 22 DUP (02H)
+     10	0020  00		     SPACE   DB	00H
+     11	0021  0F*(02)		     SYM3   DB 15 DUP (02H)
+     12	0030  0A*(04)		     NUM   DB 10 DUP (04H)
+     13	003A  07*(02)		     SYM4   DB 7 DUP (02H)
+     14	0041  1A*(06)		     A_CAP   DB	26 DUP (06H)
+     15	005B  06*(02)		     SYM5     DB 6 DUP (02H)
+     16	0061  1A*(08)		     LCASE    DB 26 DUP	(08H)
+     17	007B  85*(02)		     SYM6   DB 133 DUP (02H)
+     18
+     19	0100  0A*(00)		     num1ascii DB 10 DUP (0)
+     20	010A  0A*(00)		     num2ascii DB 10 DUP (0)
+     21	0114  00		     operator DB  0H
+     22
+     23
+     24	0115  0D 0A 45 6E 74 65	72+  msg1     DB 0DH,0AH,'Enter	an Algebraic Expression: $'
+     25	      20 61 6E 20 41 6C	67+
+     26	      65 62 72 61 69 63	20+
+     27	      45 78 70 72 65 73	73+
+     28	      69 6F 6E 3A 20 24
+     29	0137  0D 0A 45 78 70 72	65+  msg2     DB 0DH,0AH,'Expression Entered is: $'
+     30	      73 73 69 6F 6E 20	45+
+     31	      6E 74 65 72 65 64	20+
+     32	      69 73 3A 20 24
+     33	0151  0D 0A 45 72 72 6F	72+  msgerror DB 0DH,0AH,'Error! Input format: Op1, operator, Op2 $'
+     34	      21 20 49 6E 70 75	74+
+     35	      20 66 6F 72 6D 61	74+
+     36	      3A 20 4F 70 31 2C	20+
+     37	      6F 70 65 72 61 74	6F+
+     38	      72 2C 20 4F 70 32	20+
+     39	      24
+     40
+     41
+     42
+     43	017C  20 4F 50 31 0D 0A	24   msgOperand1 DB ' OP1', 0DH,0AH,'$'
+     44	0183  20 4F 70 32 0D 0A	24   msgOperand2 DB ' Op2', 0DH,0AH,'$'
+     45	018A  20 4F 70 65 72 61	6E+  msgOperator  DB ' Operand', 0DH,0AH,'$'
+     46	      64 0D 0A 24
+     47	0195  20 52 65 73 75 6C	74+  msgResult	  DB ' Result',	0DH,0AH,'$'
+     48	      0D 0A 24
+     49
+     50
+     51	019F  FF		     AMOUNT   DB 255
+     52	01A0  ??		     COUNT   DB	?
+     53	01A1  64*(24)		     EXP   DB 100 DUP ('$')
+     54	0205  0D 0A 24		     NEWLINE DB	0DH,0AH,'$'
+     55	0208			     DATA_SEG ENDS
+     56
+     57	0000			     CODE_SEG SEGMENT PARA 'CODE' PUBLIC USE16
+Turbo Assembler	 Version 4.1	    03/08/16 11:20:17	    Page 2
+calc.asm
+
+
+
+     58
+     59				     ASSUME CS:CODE_SEG, DS:DATA_SEG, SS:STACK_SEG
+     60
+     61
+     62	0000			     MAIN PROC FAR
+     63	0000  1E		     PUSH DS
+     64	0001  33 C0		     XOR AX,AX
+     65	0003  50		     PUSH AX
+     66	0004  B8 0000s		     MOV AX,DATA_SEG
+     67	0007  8E D8		     MOV DS,AX
+     68
+     69	0009  BA 0115r			 Lea DX, MSG1
+     70	000C  B4 09			 mov ah,9
+     71	000E  CD 21			 int 21H
+     72
+     73	0010  BA 019Fr			  LEA DX,amount
+     74	0013  B4 0A				 MOV AH,0AH
+     75	0015  CD 21				     INT 21H
+     76
+     77	0017  B9 0000				  MOV CX,0
+     78
+     79
+     80	001A  8A 0E 01A0r			  MOV CL,COUNT
+     81	001E  F6 C1 FF				  TEST CL,0FFH
+     82	0021  74 10				  JZ FINISH
+     83	0023  BF 01A1r				  LEA DI,exp
+     84
+     85	0026			     L1:
+     86	0026  8A 1D			  MOV BL,BYTE PTR [DI]
+     87	0028  B7 00			      MOV BH, 00H
+     88	002A  8A 1F			  MOV BL, BYTE PTR [BX]
+     89	002C  B7 01			  MOV BH, 01H
+     90	002E  FF 07			  INC WORD PTR [BX]
+     91	0030  47			  INc DI
+     92
+     93	0031  E2 F3			LOOP L1
+     94
+     95
+     96
+     97	0033  BA 0137r			FINISH:	LEA DX,msg2
+     98	0036  B4 09			     MOV AH,9
+     99	0038  CD 21			     INT 21H
+    100
+    101	003A  BF 01A1r			     MOV DI, OFFSET EXP	  ;xxxxxx
+    102	003D  B9 0100			     MOV CX, 100H
+    103	0040  FC			     CLD
+    104	0041  B0 20			     Mov AL, 20H
+    105	0043  F2> AE			     REPNE SCASB  ; di now points to operator save bx+2
+    106
+    107	0045  8B DF			     mov bx, di
+    108	0047  8B F7			     mov si, di
+    109	0049  BF 0114r			     mov di, offset operator
+    110	004C  A4			     movsb
+    111
+    112	004D  8B CB			     mov cx, bx
+    113	004F  49			     dec cx
+    114	0050  81 E9 01A1r		     sub cx, offset EXP
+Turbo Assembler	 Version 4.1	    03/08/16 11:20:17	    Page 3
+calc.asm
+
+
+
+    115
+    116	0054  BE 01A1r			     mov si, offset exp
+    117	0057  BF 0100r			     mov di, offset num1ascii
+    118	005A  F3> A4			     rep movsb
+    119	005C  83 C3 02			     add bx, 2
+    120	005F  8B FB			     mov di , bx
+    121	0061  B0 00			     mov Al, 0D
+    122	0063  B9 000A			     mov cx, 10
+    123	0066  F2> AE			     repne scasb
+    124
+    125	0068  4F			     dec di
+    126	0069  8B CF			     mov cx, di
+    127	006B  2B CB			     sub cx, BX
+    128	006D  8B F3			     mov si, bx
+    129	006F  BF 010Ar			     mov di,  offset num2ascii
+    130	0072  F3> A4			     rep movsb
+    131
+    132
+    133	0074				     c1:
+    134	0074  B8 002A			     mov ax, 2ah
+    135	0077  3D 0114r			     cmp ax, offset operator
+    136	007A  74 09			     je	c2
+    137	007C  75 00			     jne c3
+    138	007E  BA 0151r			     c3:lea dx,	msgerror
+    139	0081  B4 09			     mov ah,9
+    140	0083  CD 21			     int 21h
+    141	0085  CB			     c2: ret
+    142
+    143
+    144					     ;;;; check	for negative and make sure its numbers here
+    145
+    146
+    147	0086  0000			     num1 dw 0
+    148	0088  0000			     num2 dw 0
+    149
+    150	008A				     ascii proc	far
+    151
+    152	008A  BE 0100r			     mov si, offset num1ascii
+    153	008D  BF 0086r			     mov di, offset num1
+    154	0090  E8 0009			     call a2h
+    155
+    156	0093  BE 010Ar			     mov si, offset num2ascii
+    157	0096  BF 0088r			     mov di, offset num2
+    158	0099  E8 0000			     call a2h
+    159
+    160	009C				     ascii endp
+    161
+    162	009C				     a2h proc Near
+    163	009C  B9 0000			     mov cx, 0
+    164	009F  B8 0000			     mov ax,0
+    165
+    166	00A2				    b1:
+    167	00A2  8A 0C			    mov	cl, [si]
+    168	00A4  46			    inc	si
+    169	00A5  80 F9 00			    cmp	cl,0
+    170	00A8  74 0C			    je b2
+    171	00AA  80 E9 30			    sub	cl, 30h
+Turbo Assembler	 Version 4.1	    03/08/16 11:20:17	    Page 4
+calc.asm
+
+
+
+    172	00AD  B8 000A			    mov	ax,10
+    173	00B0  F7 25			    mul	word ptr [di]
+    174	00B2  03 C1			    add	ax, cx
+    175	00B4  EB EC			    jmp	b1
+    176
+    177	00B6				    b2:
+    178	00B6  C3			     ret
+    179
+    180	00B7				     a2h endp
+    181
+    182
+    183
+    184
+    185
+    186
+    187
+    188
+    189
+    190
+    191
+    192
+    193
+    194
+    195
+    196
+    197
+    198
+    199
+    200	00B7  BA 0205r			     MOV DX,OFFSET NEWLINE
+    201	00BA  B4 09			     MOV AH,9
+    202	00BC  CD 21				 INT 21H
+    203
+    204	00BE  CB		     RET
+    205	00BF			     MAIN ENDP
+    206	00BF			     CODE_SEG ENDS
+    207				     END MAIN
+Turbo Assembler	 Version 4.1	    03/08/16 11:20:17	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/08/16"
+??FILENAME			  Text	 "calc	  "
+??TIME				  Text	 "11:20:17"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODE_SEG
+@FILENAME			  Text	 CALC
+@WORDSIZE			  Text	 2
+A2H				  Near	 CODE_SEG:009C
+AMOUNT				  Byte	 DATA_SEG:019F
+ASCII				  Far	 CODE_SEG:008A
+A_CAP				  Byte	 DATA_SEG:0041
+B1				  Near	 CODE_SEG:00A2
+B2				  Near	 CODE_SEG:00B6
+C1				  Near	 CODE_SEG:0074
+C2				  Near	 CODE_SEG:0085
+C3				  Near	 CODE_SEG:007E
+COUNT				  Byte	 DATA_SEG:01A0
+EXP				  Byte	 DATA_SEG:01A1
+FINISH				  Near	 CODE_SEG:0033
+L1				  Near	 CODE_SEG:0026
+LCASE				  Byte	 DATA_SEG:0061
+MAIN				  Far	 CODE_SEG:0000
+MSG1				  Byte	 DATA_SEG:0115
+MSG2				  Byte	 DATA_SEG:0137
+MSGERROR			  Byte	 DATA_SEG:0151
+MSGOPERAND1			  Byte	 DATA_SEG:017C
+MSGOPERAND2			  Byte	 DATA_SEG:0183
+MSGOPERATOR			  Byte	 DATA_SEG:018A
+MSGRESULT			  Byte	 DATA_SEG:0195
+NEWLINE				  Byte	 DATA_SEG:0205
+NUM				  Byte	 DATA_SEG:0030
+NUM1				  Word	 CODE_SEG:0086
+NUM1ASCII			  Byte	 DATA_SEG:0100
+NUM2				  Word	 CODE_SEG:0088
+NUM2ASCII			  Byte	 DATA_SEG:010A
+OPERATOR			  Byte	 DATA_SEG:0114
+SPACE				  Byte	 DATA_SEG:0020
+SYM1				  Byte	 DATA_SEG:0000
+SYM2				  Byte	 DATA_SEG:000A
+SYM3				  Byte	 DATA_SEG:0021
+SYM4				  Byte	 DATA_SEG:003A
+SYM5				  Byte	 DATA_SEG:005B
+SYM6				  Byte	 DATA_SEG:007B
+TAB				  Byte	 DATA_SEG:0009
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE_SEG			  16  00BF Para	  Public  CODE
+DATA_SEG			  16  0208 Para	  none	  DATA
+STACK_SEG			  16  0064 Para	  Stack
+

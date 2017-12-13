@@ -1,0 +1,90 @@
+Turbo Assembler	 Version 4.1	    02/17/16 07:52:08	    Page 1
+realdemo.asm
+
+
+
+      1	0000			     .MODEL MEDIUM
+      2	0000			     .STACK 100
+      3	0000			     .DATA
+      4	0000  50			     buffer  db	80
+      5	0001  ??			     num     db	?
+      6	0002  50*(??)			     act_buf db	80 dup (?)
+      7	0052  45 43 45 33 32 31	30+	     message db	'ECE3210 LAB2',	0dh, 0ah
+      8	      20 4C 41 42 32 0D	0A
+      9	0060  45 6E 74 65 72 20	61+		     db	'Enter a string	from keyboard (lass than 80): $'
+     10	      20 73 74 72 69 6E	67+
+     11	      20 66 72 6F 6D 20	6B+
+     12	      65 79 62 6F 61 72	64+
+     13	      20 28 6C 61 73 73	20+
+     14	      74 68 61 6E 20 38	30+
+     15	      29 3A 20 24
+     16	008E  ??			     INCHAR db ?
+     17	008F  0D 0A 24			     NEWLINE db	0dh, 0ah, '$'
+     18
+     19	0092			     .CODE
+     20					     .STARTUP	     ;initialize the program
+1    21	0000			     @Startup:
+1    22	0000  BA 0000s			     MOV     DX,@data
+1    23	0003  8E DA			     MOV     DS,DX
+1    24	0005  8C D3			     MOV     BX,SS
+1    25	0007  2B DA			     SUB     BX,DX
+1    26	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     27	      E3
+1    28	0011  FA			     CLI
+1    29	0012  8E D2			     MOV     SS,DX
+1    30	0014  03 E3			     ADD     SP,BX
+1    31	0016  FB			     STI
+     32	0017					     main proc far
+     33	0017  BA 0052r					     LEA     DX, MESSAGE     ;PRINT THE	MESSAGE
+     34	001A  B4 09					     MOV     AH, 9	     ; DISPLAYS	CHARACTER ADDRESS
+     35	001C  CD 21					     INT     21H
+     36
+     37	001E  BA 0000r					     MOV     DX, OFFSET	BUFFER
+     38	0021  B4 0A					     MOV     AH, 0AH
+     39	0023  CD 21					     INT     21H
+     40
+     41				     .EXIT
+1    42	0025  B4 4C			     MOV     AH,4Ch
+1    43	0027  CD 21			     INT     21h
+     44	0029				     MAIN ENDP
+     45				     END
+Turbo Assembler	 Version 4.1	    02/17/16 07:52:08	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/17/16"
+??FILENAME			  Text	 "realdemo"
+??TIME				  Text	 "07:52:08"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 REALDEMO_TEXT
+@CODESIZE			  Text	 1
+@CPU				  Text	 0101H
+@CURSEG				  Text	 REALDEMO_TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 REALDEMO
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 4
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 REALDEMO_TEXT:0000
+@WORDSIZE			  Text	 2
+ACT_BUF				  Byte	 DGROUP:0002
+BUFFER				  Byte	 DGROUP:0000
+INCHAR				  Byte	 DGROUP:008E
+MAIN				  Far	 REALDEMO_TEXT:0017
+MESSAGE				  Byte	 DGROUP:0052
+NEWLINE				  Byte	 DGROUP:008F
+NUM				  Byte	 DGROUP:0001
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0064 Para	  Stack	  STACK
+  _DATA				  16  0092 Word	  Public  DATA
+REALDEMO_TEXT			  16  0029 Word	  Public  CODE
+

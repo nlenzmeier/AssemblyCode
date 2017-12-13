@@ -1,0 +1,169 @@
+Turbo Assembler	 Version 4.1	    04/02/16 19:28:30	    Page 1
+prelab.asm
+
+
+
+      1				     ;INCLUDE DOS.MAC
+      2				     INCLUDE NUTS.DAT
+1     3				     ; Each entry contains TWO sets of field :
+1     4				     ; a. A pointer to the next	element. The data type is WORD.
+1     5				     ; b. Text field which contains description	of each	nuts,
+1     6				     ;	    which is terminated	by 2 spaces. The data type is BYTE.
+1     7				     NUTS     MACRO
+1     8				     LIST_ORG	 DW PIS
+1     9				     PIS	 DW HAZ
+1    10						 DB 'Pistachios	: A native of Syria  '
+1    11				     HAZ	 DW MAC
+1    12						 DB 'Hazels : A	native of Europe and south west	Asia  '
+1    13				     MAC	 DW PEA
+1    14						 DB 'Macadamia Nuts : A	native of North	East Australia	'
+1    15				     PEA	 DW CAS
+1    16						 DB 'Peanuts : A native	of South America  '
+1    17				     CAS	 DW PIN
+1    18						 DB 'Cashews : A native	of South and Central America  '
+1    19				     PIN	 DW ALM
+1    20						 DB 'Pine Nuts : A native of the eastern Mediterranean region  '
+1    21				     ALM	 DW 0
+1    22						 DB 'Almonds : A native	of the eastern Mediterranean region  '
+1    23						 ENDM
+     24
+     25	0000			     .MODEL MEDIUM
+     26	0000			     .STACK 100H
+     27
+     28	0000			     .DATA
+     29					  NUTS
+1    30	0000  0002r		     LIST_ORG	 DW PIS
+1    31	0002  0024r		     PIS	 DW HAZ
+1    32	0004  50 69 73 74 61 63	68+		 DB 'Pistachios	: A native of Syria  '
+     33	      69 6F 73 20 3A 20	41+
+     34	      20 6E 61 74 69 76	65+
+     35	      20 6F 66 20 53 79	72+
+     36	      69 61 20 20
+1    37	0024  0057r		     HAZ	 DW MAC
+1    38	0026  48 61 7A 65 6C 73	20+		 DB 'Hazels : A	native of Europe and south west	Asia  '
+     39	      3A 20 41 20 6E 61	74+
+     40	      69 76 65 20 6F 66	20+
+     41	      45 75 72 6F 70 65	20+
+     42	      61 6E 64 20 73 6F	75+
+     43	      74 68 20 77 65 73	74+
+     44	      20 41 73 69 61 20	20
+1    45	0057  008Cr		     MAC	 DW PEA
+1    46	0059  4D 61 63 61 64 61	6D+		 DB 'Macadamia Nuts : A	native of North	East Australia	'
+     47	      69 61 20 4E 75 74	73+
+     48	      20 3A 20 41 20 6E	61+
+     49	      74 69 76 65 20 6F	66+
+     50	      20 4E 6F 72 74 68	20+
+     51	      45 61 73 74 20 41	75+
+     52	      73 74 72 61 6C 69	61+
+     53	      20 20
+1    54	008C  00B3r		     PEA	 DW CAS
+1    55	008E  50 65 61 6E 75 74	73+		 DB 'Peanuts : A native	of South America  '
+     56	      20 3A 20 41 20 6E	61+
+     57	      74 69 76 65 20 6F	66+
+Turbo Assembler	 Version 4.1	    04/02/16 19:28:30	    Page 2
+prelab.asm
+
+
+
+     58	      20 53 6F 75 74 68	20+
+     59	      41 6D 65 72 69 63	61+
+     60	      20 20
+1    61	00B3  00E6r		     CAS	 DW PIN
+1    62	00B5  43 61 73 68 65 77	73+		 DB 'Cashews : A native	of South and Central America  '
+     63	      20 3A 20 41 20 6E	61+
+     64	      74 69 76 65 20 6F	66+
+     65	      20 53 6F 75 74 68	20+
+     66	      61 6E 64 20 43 65	6E+
+     67	      74 72 61 6C 20 41	6D+
+     68	      65 72 69 63 61 20	20
+1    69	00E6  0122r		     PIN	 DW ALM
+1    70	00E8  50 69 6E 65 20 4E	75+		 DB 'Pine Nuts : A native of the eastern Mediterranean region  '
+     71	      74 73 20 3A 20 41	20+
+     72	      6E 61 74 69 76 65	20+
+     73	      6F 66 20 74 68 65	20+
+     74	      65 61 73 74 65 72	6E+
+     75	      20 4D 65 64 69 74	65+
+     76	      72 72 61 6E 65 61	6E+
+     77	      20 72 65 67 69 6F	6E+
+     78	      20 20
+1    79	0122  0000		     ALM	 DW 0
+1    80	0124  41 6C 6D 6F 6E 64	73+		 DB 'Almonds : A native	of the eastern Mediterranean region  '
+     81	      20 3A 20 41 20 6E	61+
+     82	      74 69 76 65 20 6F	66+
+     83	      20 74 68 65 20 65	61+
+     84	      73 74 65 72 6E 20	4D+
+     85	      65 64 69 74 65 72	72+
+     86	      61 6E 65 61 6E 20	72+
+     87	      65 67 69 6F 6E 20	20
+     88	015C  0D 0A 24			  NEWLINE DB 0DH,0AH,'$'
+     89
+     90	015F			     .CODE
+     91					  .STARTUP
+1    92	0000			     @Startup:
+1    93	0000  BA 0000s			     MOV     DX,@data
+1    94	0003  8E DA			     MOV     DS,DX
+1    95	0005  8C D3			     MOV     BX,SS
+1    96	0007  2B DA			     SUB     BX,DX
+1    97	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     98	      E3
+1    99	0011  FA			     CLI
+1   100	0012  8E D2			     MOV     SS,DX
+1   101	0014  03 E3			     ADD     SP,BX
+1   102	0016  FB			     STI
+    103
+    104	0017			     MAIN PROC FAR
+    105	0017  B8 0000s			  MOV AX,@DATA
+    106	001A  8E D8			  MOV DS,AX
+    107				     .EXIT
+1   108	001C  B4 4C			     MOV     AH,4Ch
+1   109	001E  CD 21			     INT     21h
+    110	0020			     MAIN ENDP
+    111
+    112				     END
+Turbo Assembler	 Version 4.1	    04/02/16 19:28:30	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "04/02/16"
+??FILENAME			  Text	 "prelab  "
+??TIME				  Text	 "19:28:30"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 PRELAB_TEXT
+@CODESIZE			  Text	 1
+@CPU				  Text	 0101H
+@CURSEG				  Text	 PRELAB_TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 PRELAB
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 4
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 PRELAB_TEXT:0000
+@WORDSIZE			  Text	 2
+ALM				  Word	 DGROUP:0122
+CAS				  Word	 DGROUP:00B3
+HAZ				  Word	 DGROUP:0024
+LIST_ORG			  Word	 DGROUP:0000
+MAC				  Word	 DGROUP:0057
+MAIN				  Far	 PRELAB_TEXT:0017
+NEWLINE				  Byte	 DGROUP:015C
+PEA				  Word	 DGROUP:008C
+PIN				  Word	 DGROUP:00E6
+PIS				  Word	 DGROUP:0002
+
+Macro Name
+
+NUTS
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  015F Word	  Public  DATA
+PRELAB_TEXT			  16  0020 Word	  Public  CODE
+

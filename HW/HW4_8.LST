@@ -1,0 +1,67 @@
+Turbo Assembler	 Version 4.1	    03/24/16 10:05:47	    Page 1
+hw4_8.ASM
+
+
+
+      1	0000			     STSEG SEGMENT
+      2	0000  40*(??)			     DB	64 DUP (?)
+      3	0040			     STSEG ENDS
+      4				     ;--------------------
+      5	0000			     DTSEG SEGMENT
+      6	      =0008		     COUNT EQU 08
+      7	0000  08FC 10CC	04B0 0E74 +  DATA  DW 2300, 4300, 1200,	3700, 1298, 4323, 5673,	986
+      8	      0512 10E3	1629 03DA
+      9					   ORG 0010H
+     10	0010  02*(????)		     SUM   DW 2	DUP(?)
+     11	0014			     DTSEG ENDS
+     12				     ;-------------------
+     13	0000			     CDSEG SEGMENT
+     14
+     15	0000			     MAIN PROC FAR
+     16					  ASSUME CS:CDSEG,DS:DTSEG,SS:STSEG
+     17	0000  B8 0000s				     MOV AX, DTSEG
+     18	0003  8E D8				     MOV DS, AX
+     19	0005  B9 0008				     MOV CX, COUNT
+     20	0008  BE 0000r				     MOV SI, OFFSET DATA
+     21	000B  B8 0000				     MOV AX, 00
+     22	000E  8B D8				     MOV BX, AX
+     23	0010  03 04		       BACK:	     ADD AX, [SI]
+     24	0012  83 D3 00				     ADC BX, 0
+     25	0015  46				     INC SI
+     26	0016  46				     INC SI
+     27	0017  49				     DEC CX
+     28	0018  75 F6				     JNZ BACK
+     29	001A  A3 0010r				     MOV SUM, AX
+     30	001D  B4 4C				     MOV AH, 4CH
+     31	001F  CD 21				     INT 21H
+     32	0021			     MAIN ENDP
+     33	0021			     CDSEG ENDS
+     34				     END MAIN
+Turbo Assembler	 Version 4.1	    03/24/16 10:05:47	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/24/16"
+??FILENAME			  Text	 "hw4_8	  "
+??TIME				  Text	 "10:05:47"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CDSEG
+@FILENAME			  Text	 HW4_8
+@WORDSIZE			  Text	 2
+BACK				  Near	 CDSEG:0010
+COUNT				  Number 0008
+DATA				  Word	 DTSEG:0000
+MAIN				  Far	 CDSEG:0000
+SUM				  Word	 DTSEG:0010
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CDSEG				  16  0021 Para	  none
+DTSEG				  16  0014 Para	  none
+STSEG				  16  0040 Para	  none
+

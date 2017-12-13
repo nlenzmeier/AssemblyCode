@@ -1,0 +1,368 @@
+Turbo Assembler	 Version 4.1	    03/15/16 12:51:03	    Page 1
+PARSING.ASM
+
+
+
+      1	0000			     STACK_SEG SEGMENT STACK USE16
+      2	0000  64*(??)		     DB	100 DUP(?)
+      3	0064			     STACK_SEG ENDS
+      4
+      5	0000			     DATA_SEG SEGMENT 'DATA' USE16    ;CREATE THE TABLE
+      6
+      7	0000  0A*(24)			     Num1 DB 10	DUP ('$')
+      8	000A  0A*(24)			     Num2 DB 10	DUP ('$')
+      9	0014  02*(24)			     RESULT DB 2 DUP ('$')
+     10	0016  ??			     Operator DB ?
+     11	0017  64			     Buffer DB 100				     ; max number(100) of chars	expected
+     12	0018  ??			     Num3 DB ?
+     13	0019  64*(24)			     Act_Buf DB	100 DUP	('$')			     ; actual buffer w/	size=?max number?
+     14
+     15	007D  64			     Buffer2 DB	100				     ; max number(100) of chars	expected
+     16	007E  ??			     Num4 DB ?
+     17	007F  64*(24)			     Act_Buf2 DB 100 DUP ('$')			     ; actual buffer w/	size=?max number?
+     18
+     19	00E3  0D 0A 41 67 61 69	6E+	     msgAGAIN  db 0DH, 0AH,'Again? (1)To quit: $'
+     20	      3F 20 28 31 29 54	6F+
+     21	      20 71 75 69 74 3A	20+
+     22	      24
+     23	00F9  0D 0A 24			     msgNEWLINE	db 0DH,0AH,'$'
+     24	00FC  0D 0A 45 6E 74 65	72+	     msgINPUT  db 0DH, 0AH,'Enter an algebraic command line: $'
+     25	      20 61 6E 20 61 6C	67+
+     26	      65 62 72 61 69 63	20+
+     27	      63 6F 6D 6D 61 6E	64+
+     28	      20 6C 69 6E 65 3A	20+
+     29	      24
+     30	0120  0D 0A 52 65 73 75	6C+	     msgResult db 0DH, 0AH,'Result: $'
+     31	      74 3A 20 24
+     32	012B  0D 0A 45 72 72 6F	72+	     msgError0 db 0DH, 0AH,'Error!!'
+     33	      21 21
+     34	0134  0D 0A 66 69 72 73	74+	     msgNUM1   db 0DH, 0AH,'first number: $'
+     35	      20 6E 75 6D 62 65	72+
+     36	      3A 20 24
+     37	0145  0D 0A 73 65 63 6F	6E+	     msgNUM2   db 0DH, 0AH,'second number: $'
+     38	      64 20 6E 75 6D 62	65+
+     39	      72 3A 20 24
+     40	0157  0D 0A 74 68 65 20	6F+	     msgOPERATOR db 0DH, 0AH,'the operator: $'
+     41	      70 65 72 61 74 6F	72+
+     42	      3A 20 24
+     43
+     44	0168			     DATA_SEG ENDS
+     45
+     46	0000			     CODE_SEG SEGMENT PARA 'CODE' PUBLIC USE16
+     47				     ASSUME CS:CODE_SEG, DS:DATA_SEG, SS:STACK_SEG
+     48
+     49	0000			     MAIN PROC FAR
+     50
+     51
+     52	0000  B8 0000s			     MOV AX,DATA_SEG			     ;initialize data
+     53	0003  8E D8			     MOV DS,AX
+     54	0005  8E C0			     MOV ES,AX
+     55
+     56	0007  E8 00A3			     CALL INPUT				     ;parsing string
+     57
+Turbo Assembler	 Version 4.1	    03/15/16 12:51:03	    Page 2
+PARSING.ASM
+
+
+
+     58	000A  50 55 8B EC C7 46	02+	     PUSH offset Num1				 ;input	of ascii2hex
+     59	      0000r 5D
+     60	0014  E8 00ED			     CALL ASCII2HEX				 ;returns value	of number string to dx
+     61	0017  52			     PUSH DX					 ;pushes value for operation
+     62	0018  50 55 8B EC C7 46	02+	     PUSH offset Num2				 ;input	of ascii2hex
+     63	      000Ar 5D
+     64	0022  E8 00DF			     CALL ASCII2HEX				 ;returns value	of number string to dx
+     65	0025  52			     PUSH DX					 ;pushes value for operation
+     66
+     67	0026				     SUMLOOP:
+     68	0026  80 3E 0016r 2B			     CMP OPERATOR, '+'
+     69	002B  75 03				     JNE SUBLOOP
+     70					     ;	     CALL SUM
+     71	002D  EB 25 90				     JMP ENDOFLOOP
+     72	0030				     SUBLOOP:
+     73	0030  80 3E 0016r 2D			     CMP OPERATOR, '-'
+     74	0035  75 03				     JNE DIVLOOP
+     75					     ;	     CALL SUB
+     76	0037  EB 1B 90				     JMP ENDOFLOOP
+     77	003A				     DIVLOOP:
+     78	003A  80 3E 0016r 2F			     CMP OPERATOR, '/'
+     79	003F  75 03				     JNE MULLOOP
+     80					     ;	     CALL DIVIDE
+     81	0041  EB 11 90				     JMP ENDOFLOOP
+     82	0044				     MULLOOP:
+     83	0044  80 3E 0016r 2A			     CMP OPERATOR, '*'
+     84	0049  75 03				     JNE ERRORLOOP
+     85					     ;	     CALL MULTIPLY
+     86	004B  EB 07 90				     JMP ENDOFLOOP
+     87	004E				     ERRORLOOP:
+     88	004E  E8 00AB				     CALL ERROR
+     89	0051  EB 01 90				     JMP ENDOFLOOP
+     90	0054				     ENDOFLOOP:
+     91
+     92
+     93
+     94	0054  BA 00F9r			     LEA DX, msgNEWLINE
+     95	0057  B4 09			     MOV AH, 09h
+     96	0059  CD 21			     INT 21H
+     97
+     98	005B  BA 0134r			     LEA DX, msgNUM1
+     99	005E  B4 09			     MOV AH, 09H
+    100	0060  CD 21			     INT 21H
+    101
+    102	0062  BA 0000r			     LEA DX, Num1			     ; print number 1
+    103	0065  B4 09			     MOV AH, 09H
+    104	0067  CD 21			     INT 21H
+    105
+    106	0069  BA 00F9r			     LEA DX, msgNEWLINE
+    107	006C  B4 09			     MOV AH, 09h
+    108	006E  CD 21			     INT 21H
+    109
+    110	0070  BA 0145r			     LEA DX, msgNUM2			     ; print number 2
+    111	0073  B4 09			     MOV AH, 09H
+    112	0075  CD 21			     INT 21H
+    113
+    114	0077  BA 000Ar			     LEA DX, Num2
+Turbo Assembler	 Version 4.1	    03/15/16 12:51:03	    Page 3
+PARSING.ASM
+
+
+
+    115	007A  B4 09			     MOV AH, 09h
+    116	007C  CD 21			     INT 21H
+    117
+    118	007E  BA 00F9r			     LEA DX, msgNEWLINE
+    119	0081  B4 09			     MOV AH, 09h
+    120	0083  CD 21			     INT 21H
+    121
+    122	0085  BA 0157r			     LEA DX, msgOPERATOR		     ; print operator
+    123	0088  B4 09			     MOV AH, 09h
+    124	008A  CD 21			     INT 21H
+    125
+    126	008C  8A 16 0016r		     MOV DL, operator
+    127	0090  B4 02			     MOV AH, 02H
+    128	0092  CD 21			     INT 21H
+    129
+    130	0094  BA 00F9r			     LEA DX, msgNEWLINE			     ; print result
+    131	0097  B4 09			     MOV AH, 09H
+    132	0099  CD 21			     INT 21H
+    133
+    134	009B  BA 0120r			     LEA DX, msgRESULT
+    135	009E  B4 09			     MOV AH, 09H
+    136	00A0  CD 21			     INT 21H
+    137
+    138
+    139	00A2  BA 0014r			     LEA DX, RESULT
+    140	00A5  B4 09			     MOV AH, 09H
+    141	00A7  CD 21			     INT 21H
+    142
+    143	00A9  B4 4C			     MOV AH, 4CH			     ;end program
+    144	00AB  CD 21			     INT 21H
+    145				     ;------------------
+    146	00AD			     INPUT PROC	NEAR
+    147
+    148	00AD  BA 00FCr			     LEA    DX,msgINPUT			      ;print message
+    149	00B0  B4 09			     MOV    AH,9
+    150	00B2  CD 21			     INT    21H
+    151
+    152	00B4  BA 0017r			     MOV DX,offset Buffer		      ;read and	store string
+    153	00B7  B4 0A			     MOV AH,0AH
+    154	00B9  CD 21			     INT 21H
+    155
+    156	00BB  B9 0000			     MOV CX,0
+    157	00BE  8A 0E 0018r		     MOV CL,Num3
+    158
+    159	00C2  FC			     CLD
+    160	00C3  BF 0019r			     MOV DI,offset Act_Buf			 ;sets di to beginning of string
+    161	00C6  B0 20			     MOV AL,20H
+    162	00C8  F2> AE			     REPNE SCASB
+    163
+    164	00CA  8B DF			     MOV BX,DI
+    165	00CC  8B F7			     MOV SI,DI
+    166	00CE  BF 0016r			     MOV DI,OFFSET OPERATOR
+    167	00D1  A4			     MOVSB					 ;stores operator in new string
+    168
+    169	00D2  83 C6 01			     ADD SI,1
+    170	00D5  BF 000Ar			     MOV DI,offset Num2				 ;stores num2 in new string
+    171	00D8  F3> A4			     REP MOVSB
+Turbo Assembler	 Version 4.1	    03/15/16 12:51:03	    Page 4
+PARSING.ASM
+
+
+
+    172
+    173	00DA  83 EB 01			     SUB BX,1
+    174	00DD  81 EB 0019r		     SUB BX,offset Act_Buf
+    175	00E1  8B CB			     MOV CX,BX
+    176
+    177	00E3  BE 0019r			     MOV SI,offset Act_Buf
+    178	00E6  BF 0000r			     MOV DI,offset Num1
+    179
+    180	00E9  F3> A4			     REP MOVSB					;stores	num1 in	new string
+    181
+    182	00EB  BF 000Ar			     MOV DI,offset Num2
+    183	00EE  B0 0D			     MOV AL,13D
+    184	00F0  B9 0005			     MOV CX,5
+    185	00F3  F2> AE			     REPNE SCASB
+    186	00F5  83 EF 01			     SUB DI,1
+    187	00F8  B0 00			     MOV AL,0H
+    188	00FA  AA			     STOSB
+    189
+    190					     ;--------------make error checks for num1 and num2
+    191
+    192
+    193	00FB  C3		     RET
+    194	00FC			     INPUT ENDP
+    195				     ;----------------
+    196	00FC			     ERROR PROC	NEAR
+    197
+    198	00FC  BA 012Br			     LEA    DX,msgError0			       ;print message
+    199	00FF  B4 09			     MOV    AH,09H
+    200	0101  CD 21			     INT    21H
+    201
+    202	0103  C3			     RET
+    203	0104				     ERROR ENDP
+    204				     ;-------------------
+    205	0104			     ASCII2HEX PROC NEAR
+    206
+    207	0104  55			     PUSH BP
+    208	0105  8B EC			     MOV BP,SP
+    209	0107  8B 5E 04			     MOV BX,[BP+4]				 ;obtain DI from stack
+    210	010A  B9 0000			     MOV CX,0
+    211	010D  B8 0000			     MOV AX,0
+    212	0110  BA 0000			     MOV DX,0
+    213
+    214	0113  8A 0F			     LOOP1: MOV	CL,[BX]			     ;loop to check if equal to	zero and converts   +
+    215				     every digit
+    216	0115  43				 INC BX
+    217	0116  80 F9 0D				 CMP CL,0DH
+    218	0119  74 0E				 JE LOOP2
+    219	011B  80 E9 30				 SUB CL,30H
+    220	011E  B8 000A				 MOV AX,10
+    221	0121  F7 E2				 MUL DX
+    222	0123  03 C1				 ADD AX,CX
+    223	0125  8B D0				 MOV DX,AX
+    224	0127  EB EA				 JMP LOOP1
+    225	0129				     LOOP2:
+    226
+    227	0129  5D			     POP BP
+    228	012A  C2 0002		     RET 2						 ;value	of number is in	dx
+Turbo Assembler	 Version 4.1	    03/15/16 12:51:03	    Page 5
+PARSING.ASM
+
+
+
+    229	012D			     ASCII2HEX ENDP
+    230				     ;------------------
+    231	012D			     HEX2ASCII PROC NEAR
+    232
+    233	012D  B9 000A			     MOV CX, 10
+    234	0130  50 55 8B EC C7 46	02+	     PUSH 10
+    235	      000A 5D
+    236	013A  8B F3			     MOV SI, BX
+    237	013C			     L1:
+    238	013C  BA 0000			     MOV DX, 0
+    239	013F  F7 F1			     DIV CX
+    240	0141  52			     PUSH DX
+    241	0142  3D 0000			     CMP AX, 0
+    242	0145  75 F5			     JNZ L1
+    243	0147			     L2:
+    244	0147  5A			     POP DX
+    245	0148  83 FA 0A			     CMP DX, 10
+    246	014B  74 0E			     JE	L4
+    247	014D  80 C2 30			     ADD DL, 30H
+    248	0150  80 FA 39			     CMP DL, 39H
+    249	0153  EB 01 90			     JMP L3
+    250	0156			     L3:
+    251	0156  88 17			     MOV [BX], DL
+    252	0158  43			     INC BX
+    253	0159  EB EC			     JMP L2
+    254	015B			     L4:
+    255	015B  C6 07 00			     MOV BYTE PTR[BX], 0
+    256
+    257	015E  C3		     RET
+    258	015F			     HEX2ASCII ENDP
+    259				     ;-----------------
+    260	015F			     SUM PROC NEAR				     ; sum function
+    261
+    262	015F  55			     PUSH BP
+    263	0160  8B EC			      MOV BP,SP
+    264	0162  8B 46 04			     MOV AX,[BP+4]
+    265	0165  03 46 06			     ADD AX,[BP+6]
+    266	0168  A3 0014r			     MOV RESULT, AX
+**Error** PARSING.ASM(246) Operand types do not	match
+    267	016B  5D			     POP BP
+    268
+    269	016C  C2 0004		     RET 4
+    270	016F			     SUM ENDP
+    271				     ;----------------
+    272
+    273
+    274	016F			     CODE_SEG ENDS
+    275				     END MAIN
+*Warning* PARSING.ASM(255) Open	procedure: MAIN
+Turbo Assembler	 Version 4.1	    03/15/16 12:51:03	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/15/16"
+??FILENAME			  Text	 "PARSING "
+??TIME				  Text	 "12:51:03"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODE_SEG
+@FILENAME			  Text	 PARSING
+@WORDSIZE			  Text	 2
+ACT_BUF				  Byte	 DATA_SEG:0019
+ACT_BUF2			  Byte	 DATA_SEG:007F
+ASCII2HEX			  Near	 CODE_SEG:0104
+BUFFER				  Byte	 DATA_SEG:0017
+BUFFER2				  Byte	 DATA_SEG:007D
+DIVLOOP				  Near	 CODE_SEG:003A
+ENDOFLOOP			  Near	 CODE_SEG:0054
+ERROR				  Near	 CODE_SEG:00FC
+ERRORLOOP			  Near	 CODE_SEG:004E
+HEX2ASCII			  Near	 CODE_SEG:012D
+INPUT				  Near	 CODE_SEG:00AD
+L1				  Near	 CODE_SEG:013C
+L2				  Near	 CODE_SEG:0147
+L3				  Near	 CODE_SEG:0156
+L4				  Near	 CODE_SEG:015B
+LOOP1				  Near	 CODE_SEG:0113
+LOOP2				  Near	 CODE_SEG:0129
+MAIN				  Far	 CODE_SEG:0000
+MSGAGAIN			  Byte	 DATA_SEG:00E3
+MSGERROR0			  Byte	 DATA_SEG:012B
+MSGINPUT			  Byte	 DATA_SEG:00FC
+MSGNEWLINE			  Byte	 DATA_SEG:00F9
+MSGNUM1				  Byte	 DATA_SEG:0134
+MSGNUM2				  Byte	 DATA_SEG:0145
+MSGOPERATOR			  Byte	 DATA_SEG:0157
+MSGRESULT			  Byte	 DATA_SEG:0120
+MULLOOP				  Near	 CODE_SEG:0044
+NUM1				  Byte	 DATA_SEG:0000
+NUM2				  Byte	 DATA_SEG:000A
+NUM3				  Byte	 DATA_SEG:0018
+NUM4				  Byte	 DATA_SEG:007E
+OPERATOR			  Byte	 DATA_SEG:0016
+RESULT				  Byte	 DATA_SEG:0014
+SUBLOOP				  Near	 CODE_SEG:0030
+SUM				  Near	 CODE_SEG:015F
+SUMLOOP				  Near	 CODE_SEG:0026
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE_SEG			  16  016F Para	  Public  CODE
+DATA_SEG			  16  0168 Para	  none	  DATA
+STACK_SEG			  16  0064 Para	  Stack
+Turbo Assembler	 Version 4.1	    03/15/16 12:51:03	    Page 7
+Error Summary
+
+
+
+**Error** PARSING.ASM(246) Operand types do not	match
+*Warning* PARSING.ASM(255) Open	procedure: MAIN
+

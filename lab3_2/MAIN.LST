@@ -1,0 +1,242 @@
+Turbo Assembler	 Version 4.1	    02/23/16 13:27:12	    Page 1
+main.asm
+
+
+
+      1	0000			     STACK_SEG SEGMENT STACK USE16
+      2	0000  64*(??)		     DB	100 DUP(?)
+      3	0064			     STACK_SEG ENDS
+      4
+      5	0000			     DATA_SEG SEGMENT 'DATA' USE16    ;CREATE THE TABLE
+      6	0000  09*(02)			 SYM1	DB 9 DUP (02H)
+      7	0009  00			 TAB   DB 0
+      8	000A  16*(02)			 SYM2	DB 22 DUP (02H)
+      9	0020  00			 SPACE	 DB 00H
+     10	0021  0F*(02)			 SYM3	DB 15 DUP (02H)
+     11	0030  0A*(04)			 NUM   DB 10 DUP (04H)
+     12	003A  07*(02)			 SYM4	DB 7 DUP (02H)
+     13	0041  1A*(06)			 A_CAP	 DB 26 DUP (06H)
+     14	005B  06*(02)			 SYM5	  DB 6 DUP (02H)
+     15	0061  1A*(08)			 LCASE	  DB 26	DUP (08H)
+     16	007B  85*(02)			 SYM6	DB 133 DUP (02H)
+     17
+     18	0100  0000			 NOTSYM	  DW 0000H
+     19	0102  0000			 SYMBOL	  DW 0000H
+     20	0104  0000			 NUMBER	  DW 0000H
+     21	0106  0000			 CAPITAL   DW 0000H
+     22	0108  0000			 LOWER	 DW 0000H
+     23
+     24	010A  45 4E 54 45 52 20	41+	 OUTMSG1   DB 'ENTER A STRING: $'
+     25	      20 53 54 52 49 4E	47+
+     26	      3A 20 24
+     27	011B  0D 0A 49 4E 50 55	54+	 OUTMSG2 DB 0DH,0AH,'INPUT STRING: $'
+     28	      20 53 54 52 49 4E	47+
+     29	      3A 20 24
+     30	012C  0D 0A 43 4F 4E 54	41+	 OUTMSG3   DB 0DH,0AH,'CONTAINS: $'
+     31	      49 4E 53 3A 20 24
+     32	0139  20 4E 55 4D 42 45	52+	 NUMBERS DB ' NUMBERS',	0DH,0AH,'$'
+     33	      53 0D 0A 24
+     34	0144  20 53 59 4D 42 4F	4C+	 SYMBOLS DB ' SYMBOLS',	0DH,0AH,'$'
+     35	      53 0D 0A 24
+     36	014F  20 43 41 50 49 54	41+	 CAPS	 DB ' CAPITALS',0DH,0AH,'$'
+     37	      4C 53 0D 0A 24
+     38	015B  20 4C 4F 57 45 52	20+	 LCASEs	  DB ' LOWER CASE',0DH,0AH,'$'
+     39	      43 41 53 45 0D 0A	24
+     40	0169  FF			 SIZE	DB 255
+*Warning* main.asm(31) Reserved	word used as symbol: SIZE
+     41	016A  ??			 COUNT	 DB ?
+     42	016B  64*(24)			 INCHAR	  DB 100 DUP ('$')
+     43	01CF  0D 0A 24			 NEWLINE DB 0DH,0AH,'$'
+     44	01D2			     DATA_SEG ENDS
+     45
+     46	0000			     CODE_SEG SEGMENT PARA 'CODE' PUBLIC USE16
+     47				     ASSUME CS:CODE_SEG, DS:DATA_SEG, SS:STACK_SEG
+     48	0000			     MAIN PROC FAR
+     49	0000  1E		     PUSH DS						     ;INITIATE THE PROGRAM
+     50	0001  33 C0			 XOR AX,AX
+     51	0003  50			 PUSH AX
+     52	0004  B8 0000s			 MOV AX,DATA_SEG
+     53	0007  8E D8			 MOV DS,AX
+     54
+     55	0009  BA 010Ar			 LEA DX,OUTMSG1							     ;PRINT MESSAGE
+     56	000C  B4 09			 MOV AH,9
+Turbo Assembler	 Version 4.1	    02/23/16 13:27:12	    Page 2
+main.asm
+
+
+
+     57	000E  CD 21			 INT 21H
+     58
+     59	0010  BA 0169r			 LEA DX,SIZE					     ;READ AND STORE STRING
+     60	0013  B4 0A			 MOV AH,0AH							     ;READ A STRING
+     61	0015  CD 21			 INT 21H
+     62
+     63	0017  B9 0000			 MOV CX,0
+     64
+     65	001A  8A 0E 016Ar		 MOV CL,COUNT					     ;GO THROUGH STORED	STRING
+     66	001E  F6 C1 FF			 TEST CL,0FFH
+     67	0021  74 10			 JZ FINISH
+     68	0023  BF 016Br			 LEA DI,INCHAR
+     69
+     70	0026			     ARRAY:
+     71	0026  8A 1D			MOV BL,BYTE PTR	[DI]	 ;MOVE ASCII BYTE INTO BX
+     72	0028  B7 00			MOV BH,	00H		 ;CLEAR	THE TOP	OF BX
+     73	002A  8A 1F			MOV BL,	BYTE PTR [BX]	 ;GO TO	TABLE AND GET NEW ADDRESS
+     74	002C  B7 01			MOV BH,	01H		 ;FINISH THE ADDRESS
+     75	002E  FF 07			INC WORD PTR [BX]	 ;INCREMENT THE	VARIABLE
+     76	0030  47			INc DI
+     77
+     78	0031  E2 F3			LOOP ARRAY
+     79
+     80	0033  BA 011Br			 FINISH: LEA DX,OUTMSG2	     ;PRINT A MESSAGE
+     81	0036  B4 09			 MOV AH,9
+     82	0038  CD 21			 INT 21H
+     83
+     84	003A  BA 016Br			 LEA DX,INCHAR		 ;PRINT	THE ENTERED STRING
+     85	003D  B4 09			 MOV AH,9
+     86	003F  CD 21			 INT 21H
+     87
+     88	0041  BA 012Cr			 LEA DX,OUTMSG3		 ;PRINT	CONTAINS
+     89	0044  B4 09			 MOV AH,9
+     90	0046  CD 21			 INT 21H
+     91
+     92	0048  A1 0104r			 MOV AX,NUMBER		     ;PRINT NUMBERS
+     93	004B  D4 0A			 AAM
+     94	004D  05 3030			 ADD AX, 3030H
+     95	0050  8B D8			 MOV BX, AX
+     96
+     97	0052  8A D7			 MOV DL,BH		     ;PRINT HIGH NUMBER
+     98	0054  B4 02			 MOV AH,2
+     99	0056  CD 21			 INT 21H
+    100
+    101	0058  8A D3			 MOV DL,BL		     ;PRINT LOW	NUMBER
+    102	005A  B4 02			 MOV AH,2
+    103	005C  CD 21			 INT 21H
+    104
+    105	005E  BA 0139r			 LEA DX,NUMBERS		     ;PRINT A MESSAGE
+    106	0061  B4 09			 MOV AH,9
+    107	0063  CD 21			 INT 21H
+    108
+    109	0065  A1 0102r			 MOV AX,SYMBOL		     ;PRINT SYMBOLS
+    110	0068  D4 0A			 AAM
+    111	006A  05 3030			 ADD AX, 3030H
+    112	006D  8B D8			 MOV BX, AX
+    113
+Turbo Assembler	 Version 4.1	    02/23/16 13:27:12	    Page 3
+main.asm
+
+
+
+    114	006F  8A D7			 MOV DL,BH		     ;PRINT HIGH NUMBER
+    115	0071  B4 02			 MOV AH,2
+    116	0073  CD 21			 INT 21H
+    117
+    118	0075  8A D3			 MOV DL,BL		     ;PRINT LOW	NUMBER
+    119	0077  B4 02			 MOV AH,2
+    120	0079  CD 21			 INT 21H
+    121
+    122	007B  BA 0144r			 LEA DX,SYMBOLS		     ;PRINT A MESSAGE
+    123	007E  B4 09			 MOV AH,9
+    124	0080  CD 21			 INT 21H
+    125
+    126	0082  A1 0106r			 MOV AX,CAPITAL		     ;PRINT CAPITAL
+    127	0085  D4 0A			 AAM
+    128	0087  05 3030			 ADD AX, 3030H
+    129	008A  8B D8			 MOV BX, AX
+    130
+    131	008C  8A D7			 MOV DL,BH		     ;PRINT HIGH NUMBER
+    132	008E  B4 02			 MOV AH,2
+    133	0090  CD 21			 INT 21H
+    134
+    135	0092  8A D3			 MOV DL,BL		     ;PRINT LOW	NUMBER
+    136	0094  B4 02			 MOV AH,2
+    137	0096  CD 21			 INT 21H
+    138
+    139	0098  BA 014Fr			 LEA DX,CAPS		     ;PRINT A MESSAGE
+    140	009B  B4 09			 MOV AH,9
+    141	009D  CD 21			 INT 21H
+    142
+    143	009F  A1 0108r			 MOV AX,LOWER		     ;PRINT LOWER CASE
+    144	00A2  D4 0A			 AAM
+    145	00A4  05 3030			 ADD AX, 3030H
+    146	00A7  8B D8			 MOV BX, AX
+    147
+    148	00A9  8A D7			 MOV DL,BH		     ;PRINT HIGH NUMBER
+    149	00AB  B4 02			 MOV AH,2
+    150	00AD  CD 21			 INT 21H
+    151
+    152	00AF  8A D3			 MOV DL,BL		     ;PRINT LOW	NUMBER
+    153	00B1  B4 02			 MOV AH,2
+    154	00B3  CD 21			 INT 21H
+    155
+    156	00B5  BA 015Br			 LEA DX,LCASEs		     ;PRINT A MESSAGE
+    157	00B8  B4 09			 MOV AH,9
+    158	00BA  CD 21			 INT 21H
+    159
+    160	00BC  BA 01CFr			 MOV DX,OFFSET NEWLINE
+    161	00BF  B4 09			 MOV AH,9
+    162	00C1  CD 21			 INT 21H
+    163
+    164	00C3  CB		     RET
+    165	00C4			     MAIN ENDP
+    166	00C4			     CODE_SEG ENDS
+    167				     END MAIN
+Turbo Assembler	 Version 4.1	    02/23/16 13:27:12	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/23/16"
+??FILENAME			  Text	 "main	  "
+??TIME				  Text	 "13:27:12"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODE_SEG
+@FILENAME			  Text	 MAIN
+@WORDSIZE			  Text	 2
+ARRAY				  Near	 CODE_SEG:0026
+A_CAP				  Byte	 DATA_SEG:0041
+CAPITAL				  Word	 DATA_SEG:0106
+CAPS				  Byte	 DATA_SEG:014F
+COUNT				  Byte	 DATA_SEG:016A
+FINISH				  Near	 CODE_SEG:0033
+INCHAR				  Byte	 DATA_SEG:016B
+LCASE				  Byte	 DATA_SEG:0061
+LCASES				  Byte	 DATA_SEG:015B
+LOWER				  Word	 DATA_SEG:0108
+MAIN				  Far	 CODE_SEG:0000
+NEWLINE				  Byte	 DATA_SEG:01CF
+NOTSYM				  Word	 DATA_SEG:0100
+NUM				  Byte	 DATA_SEG:0030
+NUMBER				  Word	 DATA_SEG:0104
+NUMBERS				  Byte	 DATA_SEG:0139
+OUTMSG1				  Byte	 DATA_SEG:010A
+OUTMSG2				  Byte	 DATA_SEG:011B
+OUTMSG3				  Byte	 DATA_SEG:012C
+SIZE				  Byte	 DATA_SEG:0169
+SPACE				  Byte	 DATA_SEG:0020
+SYM1				  Byte	 DATA_SEG:0000
+SYM2				  Byte	 DATA_SEG:000A
+SYM3				  Byte	 DATA_SEG:0021
+SYM4				  Byte	 DATA_SEG:003A
+SYM5				  Byte	 DATA_SEG:005B
+SYM6				  Byte	 DATA_SEG:007B
+SYMBOL				  Word	 DATA_SEG:0102
+SYMBOLS				  Byte	 DATA_SEG:0144
+TAB				  Byte	 DATA_SEG:0009
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE_SEG			  16  00C4 Para	  Public  CODE
+DATA_SEG			  16  01D2 Para	  none	  DATA
+STACK_SEG			  16  0064 Para	  Stack
+Turbo Assembler	 Version 4.1	    02/23/16 13:27:12	    Page 5
+Error Summary
+
+
+
+*Warning* main.asm(31) Reserved	word used as symbol: SIZE
+

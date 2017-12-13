@@ -1,0 +1,518 @@
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 1
+final2.asm
+
+
+
+      1
+      2
+      3	0000			      .MODEL SMALL
+      4	0000			      .STACK 100H
+      5
+      6	0000			      .DATA
+      7	0000  45 6E 74 65 72 20	61+	PROMPT_1  DB	       'Enter an algebraic command line: $'
+      8	      6E 20 61 6C 67 65	62+
+      9	      72 61 69 63 20 63	6F+
+     10	      6D 6D 61 6E 64 20	6C+
+     11	      69 6E 65 3A 20 24
+     12	0022  0D 0A 52 65 73 75	6C+	PROMPT_2  DB  0DH,0AH, 'Result:	$'
+     13	      74 3A 20 24
+     14	002D  0D 0A 45 72 72 6F	72+	ILLEGAL	  DB  0DH,0AH, 'Error! Input Format must be "Operand1 space Operator space	    +
+     15	      21 20 49 6E 70 75	74+  Operand2".	$'
+     16	      20 46 6F 72 6D 61	74+
+     17	      20 6D 75 73 74 20	62+
+     18	      65 20 22 4F 70 65	72+
+     19	      61 6E 64 31 20 73	70+
+     20	      61 63 65 20 4F 70	65+
+     21	      72 61 74 6F 72 20	73+
+     22	      70 61 63 65 20 4F	70+
+     23	      65 72 61 6E 64 32	22+
+     24	      2E 20 24
+     25	0076  0D 0A 41 67 61 69	6E+	Op_Loop	  DB  0DH,0AH, 'Again? (Y/N): $'
+     26	      3F 20 28 59 2F 4E	29+
+     27	      3A 20 24
+     28	0087  0D 0A 53 6F 72 72	79+	INCORRECT DB  0DH,0AH, 'Sorry! Incorrect response. $'
+     29	      21 20 49 6E 63 6F	72+
+     30	      72 65 63 74 20 72	65+
+     31	      73 70 6F 6E 73 65	2E+
+     32	      20 24
+     33
+     34	00A5  0A*(00)			num1ascii DB 10	DUP (0)
+     35	00AF  0A*(00)			num2ascii DB 10	DUP (0)
+     36	00B9  19			blen	  db 25
+     37	00BA  ??			bread	  db ?
+     38	00BB  19*(24)			buffer	  DB 25	DUP ('$')
+     39	00D4  ??			operator  DB ?
+     40	00D5  ??			negative  DB ?
+     41
+     42	00D6				.CODE
+     43					.startup
+1    44	0000			     @Startup:
+1    45	0000  BA 0000s			     MOV     DX,@data
+1    46	0003  8E DA			     MOV     DS,DX
+1    47	0005  8C D3			     MOV     BX,SS
+1    48	0007  2B DA			     SUB     BX,DX
+1    49	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     50	      E3
+1    51	0011  FA			     CLI
+1    52	0012  8E D2			     MOV     SS,DX
+1    53	0014  03 E3			     ADD     SP,BX
+1    54	0016  FB			     STI
+     55	0017				MAIN PROC FAR
+     56	0017				  @Loop:		       ; Loops the entire process
+     57
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 2
+final2.asm
+
+
+
+     58	0017  B8 0000s			  MOV AX, @DATA		       ; initialize DS
+     59	001A  8E D8			  MOV DS, AX
+     60	001C  8E C0			  MOV ES,AX
+     61
+     62	001E  BA 0000r			  LEA DX, PROMPT_1	       ; load and display the string PROMPT_1
+     63	0021  B4 09			  MOV AH, 09H
+     64	0023  CD 21			  INT 21H
+     65
+     66	0025  BA 00B9r			  MOV DX,OFFSET	BLEN	       ;SAME AS	LEA DX,	BLEN
+     67	0028  B4 0A			  MOV AH,0AH		       ;SETTING	AH TO 0AH
+     68	002A  CD 21			  INT 21H		       ;IN PREPARATION OF USING	21H TO SET THE BUFFER INPUT
+     69
+     70								       ;  Parse, separate operands and operator	into variables
+     71	002C  E8 012A			  CALL parsestr		       ; separate operands and operator	into variables
+     72
+     73								       ;  Convert first	operand	to binary
+     74	002F  BB 00A5r			 mov bx,Offset num1ascii
+     75	0032  E8 00A9			 CALL decimal_input
+     76	0035  83 FF 45			 CMP DI,"E"		       ; check if error	occured
+     77	0038  74 64			 JE @Continue		       ; stop if error
+     78	003A  BB 00A5r			 mov bx,Offset num1ascii
+     79	003D  E8 00E6			 CALL check_negative	       ; check if negative and negate if needed
+     80	0040  8B F7			 MOV SI, DI		       ; save first operand conversion
+     81
+     82								       ;  Convert first	operand	to binary
+     83	0042  BB 00AFr			 mov bx,Offset num2ascii
+     84	0045  E8 0096			 CALL decimal_input
+     85	0048  83 FF 45			 CMP DI,"E"		       ; check if error	occured
+     86	004B  74 51			 JE @Continue		       ; stop if error
+     87	004D  BB 00AFr			 mov bx,Offset num2ascii
+     88	0050  E8 00D3			 CALL check_negative	       ; check if negative and negate if needed
+     89	0053  8B DF			 MOV BX, DI		       ; save second operand conversion
+     90	0055  8B FE			 MOV DI, SI		       ; position first	operand	conversion
+     91
+     92								       ;  Get operator and perform operation
+     93
+     94	0057  BE 00D4r			  LEA SI, operator	       ; get memory address of operator
+     95	005A  8A 04			  MOV AL, BYTE PTR[SI]	       ; Moves the operator value into AL
+     96	005C  3C 2F			  CMP AL,2FH		       ; compare to determine what to perform
+     97	005E  74 16			  JE @DIV		       ; jump to label
+     98	0060  3C 2B			  CMP AL,2BH		       ; compare to determine what to perform
+     99	0062  74 1E			  JE @ADD		       ; jump to label
+    100	0064  3C 2D			  CMP AL,2DH		       ; compare to determine what to perform
+    101	0066  74 20			  JE @SUB		       ; jump to label
+    102	0068  3C 2A			  cmp AL, 2AH
+    103	006A  74 00			  JE @MUL
+    104
+    105
+    106
+    107
+    108				     ;*********************************************************;
+    109				     ;---------------------OPERATOR LABELS---------------------;
+    110				     ;*********************************************************;
+    111	006C				  @MUL:
+    112	006C  8B C7			  MOV AX, DI		       ; move one operand to accumulator for operation
+    113	006E  E8 005D			  CALL DO_MULTIPLY	       ; perform multiplication
+    114	0071  8B D8			  MOV BX, AX		       ; position output for display
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 3
+final2.asm
+
+
+
+    115	0073  EB 18 90			  JMP @RESULT
+    116
+    117	0076				  @DIV:
+    118	0076  8B C7			  MOV AX, DI		       ; move one operand to accumulator for operation
+    119	0078  8B CB			  MOV CX, BX
+    120	007A  E8 0054			  CALL DO_DIVIDE	       ; perform division
+    121	007D  8B D8			  MOV BX, AX		       ; position output for display
+    122	007F  EB 0C 90			  JMP @RESULT
+    123
+    124	0082				  @ADD:
+    125	0082  E8 0053			  CALL DO_ADDITION	       ; perform addition
+    126
+    127	0085  EB 06 90			  JMP @RESULT
+    128
+    129	0088				  @SUB:
+    130	0088  E8 0050			  CALL DO_SUBTRACTION	       ; perform subtraction
+    131	008B  8B DF			  MOV BX, DI
+    132
+    133	008D				  @RESULT:
+    134	008D  BA 0022r			  LEA DX, PROMPT_2	       ; load and display the string PROMPT_2
+    135	0090  B4 09			  MOV AH, 09H
+    136	0092  CD 21			  INT 21H
+    137
+    138	0094  E8 0099			  CALL DECIMAL_OUTPUT	       ; call the procedure DECIMAL_OUTPUT
+    139
+    140	0097				  @WRONG:		       ; Displays error	message	saying that they did not put in	    +
+    141				     valid answer
+    142	0097  BA 0087r			  LEA DX, INCORRECT	       ; prints	out error message
+    143	009A  B4 09			  MOV AH, 09H
+    144	009C  CD 21			  INT 21H
+    145
+    146	009E				  @Continue:
+    147	009E  BA 0076r			  LEA DX, OP_Loop	       ; prints	out requested loop string
+    148	00A1  B4 09			  MOV AH, 09H		       ; prints	repeat message
+    149	00A3  CD 21			  INT 21H
+    150
+    151	00A5  B4 01			  MOV AH,01		       ; set input function
+    152	00A7  CD 21			  INT 21H		       ; interrupt
+    153
+    154	00A9  3C 59			  CMP AL, 59H		       ; compares for yes
+    155	00AB  74 0E			  JE @Yes		       ; 59H = Y
+    156	00AD  3C 79			  CMP AL, 79H		       ; 79H = y
+    157	00AF  74 0A			  JE @Yes
+    158	00B1  3C 4E			  CMP AL, 4EH		       ; compares for no
+    159	00B3  74 15			  JE @No		       ; 4EH = N
+    160	00B5  3C 6E			  CMP AL, 6EH		       ; 6EH = n
+    161	00B7  74 11			  JE @NO		       ; NOTE: Find out	a way to NOT let other letters go through...
+    162	00B9  75 DC			  JNE @WRONG		       ; THIS will not allow users to put anything in other than Y, +
+    163				     y,N,or n
+    164
+    165
+    166	00BB				  @Yes:			       ; perform loop
+    167	00BB  B2 0A			  MOV DL, 10		       ; lines 88-94 insert a character	return
+    168	00BD  B4 02			  MOV AH, 02H
+    169	00BF  CD 21			  INT 21H
+    170	00C1  B2 0D			  MOV DL, 13
+    171	00C3  B4 02			  MOV AH, 02H
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 4
+final2.asm
+
+
+
+    172	00C5  CD 21			  INT 21H
+    173	00C7  E9 FF4D			  JMP @Loop		       ; Jumps to @loop	which I	set to the beginning of	the code
+    174
+    175	00CA				  @No:			       ; continues to finish program
+    176	00CA  B4 4C			  MOV AH, 4CH		       ; return	control	to DOS
+    177	00CC  CD 21			  INT 21H
+    178
+    179	00CE				MAIN ENDP
+    180
+    181				      ;**************************************************************************;
+    182				      ;--------------------------- DO_MULTIPLY	------------------------------;
+    183				      ;**************************************************************************;
+    184
+    185	00CE			      DO_MULTIPLY PROC
+    186				      ;	this procedure will multiply 2 numbers in decimal form
+    187					; input	: BX, DI
+    188					; output : store binary	number in BX
+    189					; MUL only takes one value, the	other is assumed (DI)
+    190
+    191	00CE  F7 E3			 MUL BX			      ;	perform	multiplication
+    192	00D0  C3			 RET			      ;	return control to the calling procedure
+    193	00D1			      DO_MULTIPLY ENDP
+    194
+    195				       ;**************************************************************************;
+    196				       ;--------------------------- DO_DIVIDE  ------------------------------;
+    197				      ;**************************************************************************;
+    198
+    199	00D1			      DO_DIVIDE	PROC
+    200					; this procedure will divide 2 numbers in decimal form
+    201					; input	: AX, CX
+    202					; output : store binary	number in CX
+    203					; MUL only takes one value, the	other is assumed (AX)
+    204
+    205	00D1  BA 0000			MOV DX,0		      ;	zero extend DX for dividing two	16 bit numbers
+    206	00D4  99			CWD
+    207	00D5  F7 F9			IDIV CX			      ;	perform	division
+    208	00D7  C3			 RET			      ;	return control to the calling procedure
+    209	00D8			      DO_DIVIDE	ENDP
+    210
+    211				      ;**************************************************************************;
+    212				      ;--------------------------- DO_ADDITION	------------------------------;
+    213				      ;**************************************************************************;
+    214
+    215	00D8			      DO_ADDITION PROC
+    216					; this procedure will add 2 numbers in decimal form
+    217					; input	: BX, DI
+    218					; output : store binary	number in BX
+    219
+    220	00D8  03 DF			 ADD BX, DI		      ;	perform	addition
+    221	00DA  C3			 RET			      ;	return control to the calling procedure
+    222	00DB			      DO_ADDITION ENDP
+    223
+    224				       ;**************************************************************************;
+    225				       ;--------------------------- DO_SUBTRACTION  ------------------------------;
+    226				      ;**************************************************************************;
+    227
+    228	00DB			      DO_SUBTRACTION PROC
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 5
+final2.asm
+
+
+
+    229				      ;	this procedure will subtract 2 numbers in decimal form
+    230					; input	: BX, DI
+    231					; output : store binary	number in BX
+    232
+    233	00DB  2B FB			 SUB DI, BX		      ;	perform	subtraction
+    234	00DD  C3			 RET			      ;	return control to the calling procedure
+    235	00DE			      DO_SUBTRACTION ENDP
+    236
+    237				      ;**************************************************************************;
+    238				      ;--------------------------- DECIMAL_INPUT  ------------------------------;
+    239				      ;**************************************************************************;
+    240
+    241	00DE			      DECIMAL_INPUT PROC
+    242					; this procedure will read a number in decimal form from a buffer
+    243					; input	: BX contains buffer address
+    244					; output : store binary	number in DI
+    245
+    246	00DE  EB 0E 90			JMP @READ		       ; jump to label @READ
+    247
+    248	00E1			     @ERROR:			       ; jump label
+    249	00E1  BA 002Dr			LEA DX,	ILLEGAL		       ; load and display the string ILLEGAL
+    250	00E4  B4 09			MOV AH,	9
+    251	00E6  CD 21			INT 21H
+    252	00E8  BF 0045			MOV DI,	"E"
+    253	00EB  EB 38 90			JMP B2
+    254
+    255	00EE			     @READ:			       ; jump label
+    256	00EE  33 FF			 XOR DI,DI
+    257	00F0  B9 0000			 mov cx,0
+    258	00F3  8B C2			 MOV AX, DX
+    259	00F5  8A 0F			 MOV cl,[bx]
+    260
+    261	00F7  80 F9 2D			 CMP CL, "-"			; compare AL with "-"
+    262	00FA  74 08			 JE B0				; jump if AL="-"
+    263
+    264	00FC  80 F9 2B			 CMP CL, "+"			; compare AL with "+"
+    265	00FF  74 03			 JE B0				; jump if AL="+"
+    266	0101  EB 02 90			 JMP B1				; jump to label
+    267
+    268	0104			     B0:				; jump label
+    269	0104  43			 inc bx				; move bx to point to next char
+    270
+    271	0105  8A 0F		     B1: mov cl,[bx]			; read char
+    272	0107  43			 inc bx
+    273	0108  80 F9 00			 cmp cl,0			; no more char to process, return
+    274	010B  74 18			 je B2
+    275									; Be sure char is a number
+    276	010D  80 F9 20			 cmp cl,20H			; compare char with 0
+    277	0110  7C CF			 jl @ERROR			; error	if char	is less	than 0
+    278	0112  80 F9 45			 cmp cl,45H			; compare char with 9
+    279	0115  7F CA			 jg @ERROR			; error	if char	is greater than	9
+    280	0117  80 E9 30			 sub cl,30h
+    281	011A  B8 000A			 mov ax,10
+    282	011D  F7 E7			 Mul di
+    283	011F  03 C1			 add ax,cx
+    284	0121  8B F8			 mov di,ax
+    285	0123  EB E0			 jmp B1
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 6
+final2.asm
+
+
+
+    286	0125			     B2:
+    287	0125  C3			RET				; return control to the	calling	procedure
+    288
+    289	0126			      DECIMAL_INPUT ENDP
+    290
+    291				      ;**************************************************************************;
+    292				      ;--------------------------- CHECK_NEGATIVE  ------------------------------;
+    293				      ;**************************************************************************;
+    294
+    295	0126			      CHECK_NEGATIVE PROC
+    296					; this procedure checks	if first character is minus and	then negates if	so
+    297					; input	: BX contains buffer address
+    298					; output : binary number in DI negated if needed
+    299
+    300	0126  8A 0F			 MOV cl,[bx]
+    301	0128  80 F9 2D			 CMP CL, "-"			; compare CL with "-"
+    302	012B  75 02			 JNE B3				; jump if CL="-"
+    303	012D  F7 DF			 NEG DI
+    304	012F			      B3:
+    305	012F  C3			 ret
+    306
+    307	0130			      CHECK_NEGATIVE ENDP
+    308
+    309				      ;**************************************************************************;
+    310				      ;---------------------------  DECIMAL_OUTPUT  -----------------------------;
+    311				      ;**************************************************************************;
+    312
+    313	0130			      DECIMAL_OUTPUT PROC
+    314					; this procedure will display a	decimal	number from binary number
+    315					; input	: BX
+    316					; output : none
+    317
+    318	0130  83 FB 00			CMP BX,	0		       ; compare BX with 0
+    319	0133  7D 08			JGE @START		       ; jump to label @START if BX>=0
+    320	0135  B4 02			MOV AH,	2		       ; set output function
+    321	0137  B2 2D			MOV DL,	"-"		       ; set DL='-'
+    322	0139  CD 21			INT 21H			       ; print the character
+    323
+    324	013B  F7 DB			NEG BX			       ; take 2's complement of	BX
+    325
+    326	013D				@START:			       ; jump label
+    327	013D  8B C3			  MOV AX, BX		       ; set AX=BX
+    328	013F  33 C9			  XOR CX, CX		       ; clear CX
+    329	0141  BB 000A			  MOV BX, 10		       ; set BX=10
+    330
+    331	0144				@REPEAT:		       ; loop label
+    332	0144  33 D2			  XOR DX, DX		       ; clear DX
+    333	0146  F7 F3			  DIV BX		       ; divide	AX by BX
+    334	0148  52			  PUSH DX		       ; push DX onto the STACK
+    335	0149  41			  INC CX		       ; increment CX
+    336	014A  0B C0			  OR AX, AX		       ; take OR of Ax with AX
+    337	014C  75 F6			JNE @REPEAT		       ; jump to label @REPEAT if ZF=0
+    338
+    339	014E  B4 02			  MOV AH, 2		       ; set output function
+    340
+    341	0150				@DISPLAY:		       ; loop label
+    342	0150  5A			  POP DX		       ; pop a value from STACK	to DX
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 7
+final2.asm
+
+
+
+    343	0151  80 CA 30			  OR DL, 30H		       ; convert decimal to ascii code
+    344	0154  CD 21			  INT 21H		       ; print a character
+    345	0156  E2 F8			LOOP @DISPLAY		       ; jump to label @DISPLAY	if CX!=0
+    346
+    347	0158  C3			RET			       ; return	control	to the calling procedure
+    348	0159			      DECIMAL_OUTPUT ENDP
+    349
+    350				      ;**************************************************************************;
+    351				      ;-----------------------------  Parse_String  -----------------------------;
+    352				      ;**************************************************************************;
+    353				      ;	String in buffer that ends with	$ is parsed according to space.	An
+    354				      ;	operand	then operator then operand are each stored in separate variables
+    355				      ;	Assumes	that first character is	not a space and	no multiple spaces exist.
+    356
+    357	0159			      parsestr PROC near
+    358
+    359	0159  B0 20			  MOV AL, 20H		    ; Determine	length until first space
+    360	015B  BF 00BBr			  MOV DI, Offset buffer	    ; Initialize DI to beginning of buffer
+    361	015E  FC			  CLD			    ; Increment	DI after each character
+    362	015F  B9 0100			  MOV CX, 100H		    ; Start count for CX doesn't matter
+    363	0162  F2> AE			  REPNE	SCASB		    ; Scan string for space decrementing CX for	each character
+    364
+    365	0164  8B DF			  MOV BX, DI		    ; Retain address of	byte after space
+    366	0166  8B F7			  MOV SI, DI		    ; Set address for operator move in next character
+    367	0168  BF 00D4r			  MOV DI, Offset operator   ; Move address of operator variable	to DI
+    368	016B  A4			  MOVSB	; copies byte from addrs DS:SI to addrs	ES:DI, then increments both SI and DI
+    369
+    370	016C  8B CB			  MOV CX, BX		    ; set address of byte after	space into CX
+    371	016E  49			  DEC CX		    ; move CX address to space
+    372	016F  81 E9 00BBr		  SUB CX, Offset buffer	    ; determines the number of times for REP on	MOVSB
+    373	0173  BE 00BBr			  MOV SI, Offset buffer	    ; sets SI to beginning of buffer for character copy
+    374	0176  BF 00A5r			  MOV DI, Offset num1ascii  ; sets DI to beginning of variable for copy
+    375	0179  F3> A4			  REP MOVSB ; copies byte from addrs DS:SI to addrs ES:DI, then	increments both	SI and DI   +
+    376				     no.times in CX
+    377
+    378	017B  83 C3 02			  ADD BX, 2		    ; assumes that a space follows the operand and moves to next    +
+    379				     operand
+    380	017E  B0 0D			  MOV AL, 0DH		    ; puts a CR	byte into AL to	search for end of string
+    381	0180  8B FB			  MOV DI, BX		    ; position DI where	to start search	for end	of string
+    382	0182  B9 0100			  MOV CX, 100H		    ; Start count for CX doesn't matter
+    383	0185  F2> AE			  REPNE	SCASB		    ; Scan string for $	decrementing CX	for each character
+    384
+    385	0187  4F			  DEC DI		    ; Move DI back so that it points to	$ character
+    386	0188  8B CF			  MOV CX, DI		    ; Set CX to	DI to setup for	SUB
+    387	018A  2B CB			  SUB CX, BX		    ; Determine	number of characters to	move
+    388	018C  8B F3			  MOV SI, BX		    ; Set SI to	first character	to move	from buffer
+    389	018E  BF 00AFr			  LEA DI, num2ascii	    ; sets DI to beginning of variable for copy
+    390	0191  F3> A4			  REP MOVSB ; copies byte from addrs DS:SI to addrs ES:DI, then	increments both	SI and DI   +
+    391				     no.times in CX
+    392
+    393	0193  C3		       RET
+    394	0194			     parsestr ENDP
+    395
+    396
+    397				      .exit
+1   398	0194  B4 4C			     MOV     AH,4Ch
+1   399	0196  CD 21			     INT     21h
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 8
+final2.asm
+
+
+
+    400				      END MAIN
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 9
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/22/16"
+??FILENAME			  Text	 "final2  "
+??TIME				  Text	 "08:58:17"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@ADD				  Near	 _TEXT:0082
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CONTINUE			  Near	 _TEXT:009E
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@DISPLAY			  Near	 _TEXT:0150
+@DIV				  Near	 _TEXT:0076
+@ERROR				  Near	 _TEXT:00E1
+@FILENAME			  Text	 FINAL2
+@INTERFACE			  Text	 000H
+@LOOP				  Near	 _TEXT:0017
+@MODEL				  Text	 2
+@MUL				  Near	 _TEXT:006C
+@NO				  Near	 _TEXT:00CA
+@READ				  Near	 _TEXT:00EE
+@REPEAT				  Near	 _TEXT:0144
+@RESULT				  Near	 _TEXT:008D
+@STACK				  Text	 DGROUP
+@START				  Near	 _TEXT:013D
+@STARTUP			  Near	 _TEXT:0000
+@SUB				  Near	 _TEXT:0088
+@WORDSIZE			  Text	 2
+@WRONG				  Near	 _TEXT:0097
+@YES				  Near	 _TEXT:00BB
+B0				  Near	 _TEXT:0104
+B1				  Near	 _TEXT:0105
+B2				  Near	 _TEXT:0125
+B3				  Near	 _TEXT:012F
+BLEN				  Byte	 DGROUP:00B9
+BREAD				  Byte	 DGROUP:00BA
+BUFFER				  Byte	 DGROUP:00BB
+CHECK_NEGATIVE			  Near	 _TEXT:0126
+DECIMAL_INPUT			  Near	 _TEXT:00DE
+DECIMAL_OUTPUT			  Near	 _TEXT:0130
+DO_ADDITION			  Near	 _TEXT:00D8
+DO_DIVIDE			  Near	 _TEXT:00D1
+DO_MULTIPLY			  Near	 _TEXT:00CE
+DO_SUBTRACTION			  Near	 _TEXT:00DB
+ILLEGAL				  Byte	 DGROUP:002D
+INCORRECT			  Byte	 DGROUP:0087
+MAIN				  Far	 _TEXT:0017
+NEGATIVE			  Byte	 DGROUP:00D5
+NUM1ASCII			  Byte	 DGROUP:00A5
+NUM2ASCII			  Byte	 DGROUP:00AF
+OPERATOR			  Byte	 DGROUP:00D4
+OP_LOOP				  Byte	 DGROUP:0076
+Turbo Assembler	 Version 4.1	    03/22/16 08:58:17	    Page 10
+Symbol Table
+
+
+
+PARSESTR			  Near	 _TEXT:0159
+PROMPT_1			  Byte	 DGROUP:0000
+PROMPT_2			  Byte	 DGROUP:0022
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  00D6 Word	  Public  DATA
+_TEXT				  16  0198 Word	  Public  CODE
+

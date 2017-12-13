@@ -1,0 +1,336 @@
+Turbo Assembler	 Version 4.1	    03/01/16 14:14:22	    Page 1
+lab3.ASM
+
+
+
+      1				     ;STACK_SEG	SEGMENT	STACK USE16
+      2				     ;DB 100 DUP(?)
+      3				     ;STACK_SEG	ENDS
+      4	0000			     .model small
+      5	0000			     .stack 100h
+      6
+      7
+      8	0000			     .data
+      9
+     10	0000  09*(02)		     SYM1   DB 9 DUP (02H)
+     11	0009  00		     TAB   DB 0
+     12	000A  16*(02)		     SYM2   DB 22 DUP (02H)
+     13	0020  00		     SPACE   DB	00H
+     14	0021  0F*(02)		     SYM3   DB 15 DUP (02H)
+     15	0030  0A*(04)		     NUM   DB 10 DUP (04H)
+     16	003A  07*(02)		     SYM4   DB 7 DUP (02H)
+     17	0041  1A*(06)		     A_CAP   DB	26 DUP (06H)
+     18	005B  06*(02)		     SYM5     DB 6 DUP (02H)
+     19	0061  1A*(08)		     LCASE    DB 26 DUP	(08H)
+     20	007B  85*(02)		     SYM6   DB 133 DUP (02H)
+     21
+     22
+     23	0100  0000		     NOTSYM   DW 0000H
+     24	0102  0000		     symc   DW 0000H
+     25	0104  0000		     numc   DW 0000H
+     26	0106  0000		     capc  DW 0000H
+     27	0108  0000		     lowc    DW	0000H
+     28
+     29	010A  4E 26 4A 3A 20 45	6E+  msg1 DB 'N&J: Enter a string: $'
+     30	      74 65 72 20 61 20	73+
+     31	      74 72 69 6E 67 3A	20+
+     32	      24
+     33	0120  0D 0A 49 6E 70 75	74+  msg2 DB 0DH,0AH,'Input String: $'
+     34	      20 53 74 72 69 6E	67+
+     35	      3A 20 24
+     36	0131  0D 0A 43 6F 6E 74	61+  msg3 DB 0DH,0AH,'Contains:	$'
+     37	      69 6E 73 3A 20 24
+     38
+     39
+     40	013E  20 43 61 70 69 74	6F+  capSTR    DB ' Capitol Letters',0DH,0AH,'$'
+     41	      6C 20 4C 65 74 74	65+
+     42	      72 73 0D 0A 24
+     43	0151  20 53 6D 61 6C 6C	20+  lowSTR   DB ' Small Letters',0DH,0AH,'$'
+     44	      4C 65 74 74 65 72	73+
+     45	      0D 0A 24
+     46	0162  20 4E 75 6D 62 65	72+  numSTR DB ' Number	(s)', 0DH,0AH,'$'
+     47	      20 28 73 29 0D 0A	24
+     48	0170  20 53 79 6D 62 6F	6C+  symbolSTR DB ' Symbols (s)', 0DH,0AH,'$'
+     49	      73 20 28 73 29 0D	0A+
+     50	      24
+     51	017F  54 68 61 6E 6B 20	79+  msg4 DB 'Thank you!' ,0DH,	0AH, '$'
+     52	      6F 75 21 0D 0A 24
+     53
+     54
+     55	018C  64		     AMOUNT   DB 100
+     56	018D  ??		     COUNT   DB	?
+     57	018E  64*(24)		     INCHAR   DB 100 DUP ('$')
+Turbo Assembler	 Version 4.1	    03/01/16 14:14:22	    Page 2
+lab3.ASM
+
+
+
+     58	01F2  0D 0A 24		     NEWLINE DB	0DH,0AH,'$'
+     59
+     60	01F5			     .code
+     61				     .startup
+1    62	0000			     @Startup:
+1    63	0000  BA 0000s			     MOV     DX,@data
+1    64	0003  8E DA			     MOV     DS,DX
+1    65	0005  8C D3			     MOV     BX,SS
+1    66	0007  2B DA			     SUB     BX,DX
+1    67	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     68	      E3
+1    69	0011  FA			     CLI
+1    70	0012  8E D2			     MOV     SS,DX
+1    71	0014  03 E3			     ADD     SP,BX
+1    72	0016  FB			     STI
+     73
+     74	0017			     MAIN PROC FAR
+     75	0017  1E		     PUSH DS
+     76	0018  33 C0		     XOR AX,AX
+     77	001A  50		     PUSH AX
+     78	001B  B8 0000s		     MOV AX,@data
+     79	001E  8E D8		     MOV DS,AX
+     80
+     81
+     82	0020  BA 010Ar			     LEA DX,msg1
+     83	0023  B4 09				 MOV AH, 09H		     ;DISPLAY STRING, MSG1
+     84	0025  CD 21				     INT 21H
+     85
+     86
+     87	0027  BA 018Cr			     LEA DX,amount
+     88	002A  B4 0A				 MOV AH,0AH
+     89	002C  CD 21				     INT 21H
+     90
+     91	002E  8A 0E 018Dr			  MOV CL,COUNT
+     92	0032  BE 018Er			     MOV SI, OFFSET INCHAR
+     93
+     94	0035			     LOOP1:
+     95
+     96	0035  80 3C 30			     CMP BYTE PTR[SI], '0'
+     97	0038  72 0C			     JB	next1
+     98	003A  80 3C 39			     CMP byte ptr[SI], '9'
+     99	003D  77 07			     JA	next1
+    100	003F  FF 06 0104r		     inc numc
+    101	0043  EB 31 90			     jmp endofloop
+    102
+    103	0046			     next1:
+    104	0046  80 3C 41			     cmp byte ptr[SI], 'A'
+    105	0049  72 0C			     jb	next2
+    106	004B  80 3C 5A			     cmp byte ptr[SI], 'Z'
+    107	004E  77 07			     ja	next2
+    108	0050  FF 06 0106r		     inc capc
+    109	0054  EB 20 90			     jmp endofloop
+    110
+    111	0057			     next2:
+    112	0057  80 3C 61			     cmp byte ptr[SI], 'a'
+    113	005A  72 0C			     jb	next3
+    114	005C  80 3C 7A			     cmp byte ptr[SI], 'z'
+Turbo Assembler	 Version 4.1	    03/01/16 14:14:22	    Page 3
+lab3.ASM
+
+
+
+    115	005F  77 07			     ja	next3
+    116	0061  FF 06 0108r		     inc lowc
+    117	0065  EB 0F 90			     jmp endofloop
+    118
+    119	0068			     next3:
+    120	0068  80 3C 20			     cmp byte ptr[SI], 20h
+    121	006B  74 09			     je	endofloop
+    122	006D  80 3C 09			     cmp byte ptr[SI], 09h
+    123	0070  74 04			     je	endofloop
+    124	0072  FF 06 0102r		     inc symc
+    125
+    126	0076			     endofloop:
+    127	0076  46			     inc SI
+    128	0077  FE 0E 018Dr		     dec count
+    129	007B  75 B8			     jnz Loop1
+    130
+    131
+    132
+    133
+    134
+    135	007D  BA 0120r			 LEA DX,msg2
+    136	0080  B4 09			     MOV AH,9
+    137	0082  CD 21				 INT 21H
+    138
+    139	0084  BA 018Er			  LEA DX,INCHAR
+    140	0087  B4 09				 MOV AH,9
+    141	0089  CD 21				 INT 21H
+    142
+    143	008B  BA 0131r				 LEA DX,msg3
+    144	008E  B4 09			      MOV AH,9
+    145	0090  CD 21				 INT 21H
+    146
+    147
+    148	0092  A1 0106r				 MOV AX, capc
+    149	0095  D4 0A				  AAM
+    150	0097  05 3030			      ADD AX, 3030H
+    151	009A  8B D8			      MOV BX, AX
+    152
+    153
+    154	009C  8A D7			     MOV DL,BH
+    155	009E  B4 02			     MOV AH,2
+    156	00A0  CD 21				 INT 21H
+    157
+    158
+    159	00A2  8A D3			     MOV DL,BL
+    160	00A4  B4 02			     MOV AH,2
+    161	00A6  CD 21				 INT 21H
+    162
+    163
+    164	00A8  BA 013Er				 LEA DX, capSTR
+    165	00AB  B4 09			     MOV AH,9
+    166	00AD  CD 21			     INT 21H	;xxxxxxx end capcount
+    167
+    168
+    169	00AF  A1 0108r			     MOV AX, lowc
+    170	00B2  D4 0A			      AAM
+    171	00B4  05 3030			      ADD AX, 3030H
+Turbo Assembler	 Version 4.1	    03/01/16 14:14:22	    Page 4
+lab3.ASM
+
+
+
+    172	00B7  8B D8			      MOV BX, AX
+    173
+    174
+    175	00B9  8A D7			      MOV DL,BH
+    176	00BB  B4 02			      MOV AH,2
+    177	00BD  CD 21				 INT 21H
+    178
+    179
+    180	00BF  8A D3			     MOV DL,BL
+    181	00C1  B4 02			     MOV AH,2
+    182	00C3  CD 21				 INT 21H
+    183
+    184
+    185	00C5  BA 0151r				 LEA DX,lowSTR
+    186	00C8  B4 09			     MOV AH,9
+    187	00CA  CD 21			     INT 21H ;xxxx endlowcount
+    188
+    189
+    190	00CC  A1 0104r			     MOV AX,numc
+    191	00CF  D4 0A			     AAM
+    192	00D1  05 3030			     ADD AX, 3030H
+    193	00D4  8B D8			     MOV BX, AX
+    194
+    195
+    196	00D6  8A D7			     MOV DL,BH
+    197	00D8  B4 02			     MOV AH,2
+    198	00DA  CD 21				 INT 21H
+    199
+    200
+    201	00DC  8A D3			     MOV DL,BL
+    202	00DE  B4 02			     MOV AH,2
+    203	00E0  CD 21				 INT 21H
+    204
+    205
+    206	00E2  BA 0162r				 LEA DX,numSTR
+    207	00E5  B4 09			      MOV AH,9
+    208	00E7  CD 21			      INT 21H ;xxx end numcount
+    209
+    210
+    211	00E9  A1 0102r			      MOV AX,Symc
+    212	00EC  D4 0A				  AAM
+    213	00EE  05 3030			      ADD AX, 3030H
+    214	00F1  8B D8			      MOV BX, AX
+    215
+    216
+    217	00F3  8A D7			     MOV DL,BH
+    218	00F5  B4 02			     MOV AH,2
+    219	00F7  CD 21				 INT 21H
+    220
+    221
+    222	00F9  8A D3			     MOV DL,BL
+    223	00FB  B4 02			     MOV AH,2
+    224	00FD  CD 21				 INT 21H
+    225
+    226
+    227	00FF  BA 0170r				 LEA DX,symbolSTR
+    228	0102  B4 09			     MOV AH,9
+Turbo Assembler	 Version 4.1	    03/01/16 14:14:22	    Page 5
+lab3.ASM
+
+
+
+    229	0104  CD 21			     INT 21H  ;xxx end symcount
+    230
+    231	0106  BA 01F2r			     MOV DX,OFFSET NEWLINE
+    232	0109  B4 09			     MOV AH,9
+    233	010B  CD 21				 INT 21H
+    234
+    235				     .EXIT
+1   236	010D  B4 4C			     MOV     AH,4Ch
+1   237	010F  CD 21			     INT     21h
+    238	0111			     MAIN ENDP
+    239				     END MAIN
+Turbo Assembler	 Version 4.1	    03/01/16 14:14:22	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/01/16"
+??FILENAME			  Text	 "lab3	  "
+??TIME				  Text	 "14:14:22"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 LAB3
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 _TEXT:0000
+@WORDSIZE			  Text	 2
+AMOUNT				  Byte	 DGROUP:018C
+A_CAP				  Byte	 DGROUP:0041
+CAPC				  Word	 DGROUP:0106
+CAPSTR				  Byte	 DGROUP:013E
+COUNT				  Byte	 DGROUP:018D
+ENDOFLOOP			  Near	 _TEXT:0076
+INCHAR				  Byte	 DGROUP:018E
+LCASE				  Byte	 DGROUP:0061
+LOOP1				  Near	 _TEXT:0035
+LOWC				  Word	 DGROUP:0108
+LOWSTR				  Byte	 DGROUP:0151
+MAIN				  Far	 _TEXT:0017
+MSG1				  Byte	 DGROUP:010A
+MSG2				  Byte	 DGROUP:0120
+MSG3				  Byte	 DGROUP:0131
+MSG4				  Byte	 DGROUP:017F
+NEWLINE				  Byte	 DGROUP:01F2
+NEXT1				  Near	 _TEXT:0046
+NEXT2				  Near	 _TEXT:0057
+NEXT3				  Near	 _TEXT:0068
+NOTSYM				  Word	 DGROUP:0100
+NUM				  Byte	 DGROUP:0030
+NUMC				  Word	 DGROUP:0104
+NUMSTR				  Byte	 DGROUP:0162
+SPACE				  Byte	 DGROUP:0020
+SYM1				  Byte	 DGROUP:0000
+SYM2				  Byte	 DGROUP:000A
+SYM3				  Byte	 DGROUP:0021
+SYM4				  Byte	 DGROUP:003A
+SYM5				  Byte	 DGROUP:005B
+SYM6				  Byte	 DGROUP:007B
+SYMBOLSTR			  Byte	 DGROUP:0170
+SYMC				  Word	 DGROUP:0102
+TAB				  Byte	 DGROUP:0009
+Turbo Assembler	 Version 4.1	    03/01/16 14:14:22	    Page 7
+Symbol Table
+
+
+
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  01F5 Word	  Public  DATA
+_TEXT				  16  0111 Word	  Public  CODE
+

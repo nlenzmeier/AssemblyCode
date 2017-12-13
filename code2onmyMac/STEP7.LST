@@ -1,0 +1,98 @@
+Turbo Assembler	 Version 4.1	    02/19/16 16:32:36	    Page 1
+STEP7.asm
+
+
+
+      1	0000			     .MODEL MEDIUM
+      2	0000			     .STACK 100H
+      3	0000			     .DATA
+      4	0000  23			     NUM1    DB	23H
+      5	0001  23			     NUM2    DB	35
+      6	0002  0454			     NUM3    DW	454H ;WHAT'S THE DIFFERENCE BETWEEN NUM1, NUM2,	AND NUM3?
+      7							     ;ANSWER: NUM3 IS A	DOUBLE WORD, AND NUM2 IS IN DECIMAL
+      8							     ; WHILE NUM1 IS IN	HEX
+      9	0004  48 45 4C 4C 4F 20	57+	     MESSAGE DB	'HELLO WORLD!',	'$', 0DH, 0AH
+     10	      4F 52 4C 44 21 24	0D+
+     11	      0A
+     12
+     13	0013			     .CODE
+     14					     .STARTUP
+1    15	0000			     @Startup:
+1    16	0000  BA 0000s			     MOV     DX,@data
+1    17	0003  8E DA			     MOV     DS,DX
+1    18	0005  8C D3			     MOV     BX,SS
+1    19	0007  2B DA			     SUB     BX,DX
+1    20	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     21	      E3
+1    22	0011  FA			     CLI
+1    23	0012  8E D2			     MOV     SS,DX
+1    24	0014  03 E3			     ADD     SP,BX
+1    25	0016  FB			     STI
+     26	0017				     MAIN PROC FAR
+     27	0017  B8 0000s			     MOV AX, @DATA
+     28	001A  8E D8			     MOV DS,AX ; why cannot do "MOV DS,@data"?
+     29	001C  B8 0000			     MOV AX,0000H
+     30	001F  A0 0000r			     MOV AL,NUM1 ;1
+     31	0022  8A 26 0001r		     MOV AH,NUM2 ;2 What’s the difference between AL and AH?
+     32	0026  A1 0002r			     MOV AX,NUM3 ;3 Is “MOV AX,NUM1” valid? Why?
+     33	0029  B8 0002r			     MOV AX,offset NUM3	;4 What	does this MOV operation	do compare to 3?
+     34	002C  BB 0000			     MOV BX,0000H
+     35	002F  B9 0000			     MOV CX,0000H
+     36	0032  BA 0000			     MOV DX,0000H
+     37	0035  BE 0004r			     MOV SI,offset MESSAGE ;5
+     38	0038  8B DE			     MOV BX,SI ;6
+     39	003A  8B 1C			     MOV BX,[SI] ;7 What’s the difference between 6 and	7?
+     40							 ; Can we use registers	other than SI?
+     41	003C  8A 0C			     MOV CL,[SI] ;8 Does the value of SI change	between	8 and 9?
+     42	003E  8A 4C 01			     MOV CL,[SI+1] ;9 What’s the difference between them?
+     43	0041  8A 14			     MOV DL,[SI] ;10
+     44	0043  8B 14			     MOV DX,[SI] ;11 What’s the	difference between 10 and 11?
+     45					     .EXIT
+1    46	0045  B4 4C			     MOV     AH,4Ch
+1    47	0047  CD 21			     INT     21h
+     48					   ;MAIN ENDP
+     49				     END
+Turbo Assembler	 Version 4.1	    02/19/16 16:32:36	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/19/16"
+??FILENAME			  Text	 "STEP7	  "
+??TIME				  Text	 "16:32:36"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 STEP7_TEXT
+@CODESIZE			  Text	 1
+@CPU				  Text	 0101H
+@CURSEG				  Text	 STEP7_TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STEP7
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 4
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 STEP7_TEXT:0000
+@WORDSIZE			  Text	 2
+MAIN				  Far	 STEP7_TEXT:0017
+MESSAGE				  Byte	 DGROUP:0004
+NUM1				  Byte	 DGROUP:0000
+NUM2				  Byte	 DGROUP:0001
+NUM3				  Word	 DGROUP:0002
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  0013 Word	  Public  DATA
+STEP7_TEXT			  16  0049 Word	  Public  CODE
+Turbo Assembler	 Version 4.1	    02/19/16 16:32:36	    Page 3
+Error Summary
+
+
+
+*Warning* STEP7.asm(34)	END(1) Open procedure: MAIN
+

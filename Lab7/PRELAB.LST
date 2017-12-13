@@ -1,0 +1,67 @@
+Turbo Assembler	 Version 4.1	    04/24/16 16:21:58	    Page 1
+prelab.asm
+
+
+
+      1	0000			     .MODEL MEDIUM
+      2	0000			     .STACK 100H
+      3
+      4	0000			     .DATA
+      5				     ;.STARTUP
+      6
+      7	0000			     MAIN PROC FAR
+**Error** prelab.asm(7)	CS unreachable from current segment
+      8	0000  B8 0000s			  MOV AX, @DATA		     ;INITIALIZE DS
+      9	0003  8E D8			  MOV DS, AX
+     10	0005  8E C0			  MOV ES, AX
+     11
+     12	0007  B4 00			  mov ah, 00h
+     13	0009  CD 16			  int 16h
+     14
+     15	000B  B4 4C			  MOV AH, 4CH		     ;SETUP EXIT DOS PARAMETER
+     16	000D  CD 21			  INT 21H		     ;ACTUALLY EXIT DOS
+     17
+     18				     .EXIT
+1    19	000F  B4 4C			     MOV     AH,4Ch
+1    20	0011  CD 21			     INT     21h
+     21	0013			     MAIN ENDP
+     22				     END
+Turbo Assembler	 Version 4.1	    04/24/16 16:21:58	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "04/24/16"
+??FILENAME			  Text	 "prelab  "
+??TIME				  Text	 "16:21:58"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 PRELAB_TEXT
+@CODESIZE			  Text	 1
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _DATA
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 PRELAB
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 4
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+MAIN				  Far	 DGROUP:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  0013 Word	  Public  DATA
+PRELAB_TEXT			  16  0000 Word	  Public  CODE
+Turbo Assembler	 Version 4.1	    04/24/16 16:21:58	    Page 3
+Error Summary
+
+
+
+**Error** prelab.asm(7)	CS unreachable from current segment
+

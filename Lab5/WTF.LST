@@ -1,0 +1,373 @@
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 1
+wtf.asm
+
+
+
+      1				     INCLUDE NUTS.dat
+1     2				     ; Each entry contains TWO sets of field :
+1     3				     ; a. A pointer to the next	element. The data type is WORD.
+1     4				     ; b. Text field which contains description	of each	nuts,
+1     5				     ;	    which is terminated	by 2 spaces. The data type is BYTE.
+1     6				     NUTS     MACRO
+1     7				     LIST_ORG	 DW PIS
+1     8				     PIS	 DW HAZ
+1     9						 DB 'Pistachios	: A native of Syria  '
+1    10				     HAZ	 DW MAC
+1    11						 DB 'Hazels : A	native of Europe and south west	Asia  '
+1    12				     MAC	 DW PEA
+1    13						 DB 'Macadamia Nuts : A	native of North	East Australia	'
+1    14				     PEA	 DW CAS
+1    15						 DB 'Peanuts : A native	of South America  '
+1    16				     CAS	 DW PIN
+1    17						 DB 'Cashews : A native	of South and Central America  '
+1    18				     PIN	 DW ALM
+1    19						 DB 'Pine Nuts : A native of the eastern Mediterranean region  '
+1    20				     ALM	 DW 0
+1    21						 DB 'Almonds : A native	of the eastern Mediterranean region  '
+1    22						 ENDM
+     23
+     24	0000			     .MODEL SMALL
+     25	0000			     .STACK 1000H
+     26
+     27	0000			     STACK_SEG SEGMENT 'STACK'
+     28
+     29	0000  64*(??)			 DB 100	DUP (?)
+     30
+     31	0064			     STACK_SEG ENDS
+     32
+     33	0000			     DATA_SEG SEGMENT 'DATA'
+     34
+     35					 NUTS
+1    36	0000  0002r		     LIST_ORG	 DW PIS
+1    37	0002  0024r		     PIS	 DW HAZ
+1    38	0004  50 69 73 74 61 63	68+		 DB 'Pistachios	: A native of Syria  '
+     39	      69 6F 73 20 3A 20	41+
+     40	      20 6E 61 74 69 76	65+
+     41	      20 6F 66 20 53 79	72+
+     42	      69 61 20 20
+1    43	0024  0057r		     HAZ	 DW MAC
+1    44	0026  48 61 7A 65 6C 73	20+		 DB 'Hazels : A	native of Europe and south west	Asia  '
+     45	      3A 20 41 20 6E 61	74+
+     46	      69 76 65 20 6F 66	20+
+     47	      45 75 72 6F 70 65	20+
+     48	      61 6E 64 20 73 6F	75+
+     49	      74 68 20 77 65 73	74+
+     50	      20 41 73 69 61 20	20
+1    51	0057  008Cr		     MAC	 DW PEA
+1    52	0059  4D 61 63 61 64 61	6D+		 DB 'Macadamia Nuts : A	native of North	East Australia	'
+     53	      69 61 20 4E 75 74	73+
+     54	      20 3A 20 41 20 6E	61+
+     55	      74 69 76 65 20 6F	66+
+     56	      20 4E 6F 72 74 68	20+
+     57	      45 61 73 74 20 41	75+
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 2
+wtf.asm
+
+
+
+     58	      73 74 72 61 6C 69	61+
+     59	      20 20
+1    60	008C  00B3r		     PEA	 DW CAS
+1    61	008E  50 65 61 6E 75 74	73+		 DB 'Peanuts : A native	of South America  '
+     62	      20 3A 20 41 20 6E	61+
+     63	      74 69 76 65 20 6F	66+
+     64	      20 53 6F 75 74 68	20+
+     65	      41 6D 65 72 69 63	61+
+     66	      20 20
+1    67	00B3  00E6r		     CAS	 DW PIN
+1    68	00B5  43 61 73 68 65 77	73+		 DB 'Cashews : A native	of South and Central America  '
+     69	      20 3A 20 41 20 6E	61+
+     70	      74 69 76 65 20 6F	66+
+     71	      20 53 6F 75 74 68	20+
+     72	      61 6E 64 20 43 65	6E+
+     73	      74 72 61 6C 20 41	6D+
+     74	      65 72 69 63 61 20	20
+1    75	00E6  0122r		     PIN	 DW ALM
+1    76	00E8  50 69 6E 65 20 4E	75+		 DB 'Pine Nuts : A native of the eastern Mediterranean region  '
+     77	      74 73 20 3A 20 41	20+
+     78	      6E 61 74 69 76 65	20+
+     79	      6F 66 20 74 68 65	20+
+     80	      65 61 73 74 65 72	6E+
+     81	      20 4D 65 64 69 74	65+
+     82	      72 72 61 6E 65 61	6E+
+     83	      20 72 65 67 69 6F	6E+
+     84	      20 20
+1    85	0122  0000		     ALM	 DW 0
+1    86	0124  41 6C 6D 6F 6E 64	73+		 DB 'Almonds : A native	of the eastern Mediterranean region  '
+     87	      20 3A 20 41 20 6E	61+
+     88	      74 69 76 65 20 6F	66+
+     89	      20 74 68 65 20 65	61+
+     90	      73 74 65 72 6E 20	4D+
+     91	      65 64 69 74 65 72	72+
+     92	      61 6E 65 61 6E 20	72+
+     93	      65 67 69 6F 6E 20	20
+     94	015C  ??			 SWAPFLAG DB ?
+     95	015D  ????			 PTR1	  DW ?
+     96	015F  ????			 PTR2	  DW ?
+     97	0161  ????			 PTR0	  DW ?
+     98
+     99	0163			     DATA_SEG ENDS
+    100
+    101	0000			     .CODE
+    102				     .STARTUP
+1   103	0000			     @Startup:
+1   104	0000  BA 0000s			     MOV     DX,@data
+1   105	0003  8E DA			     MOV     DS,DX
+1   106	0005  8C D3			     MOV     BX,SS
+1   107	0007  2B DA			     SUB     BX,DX
+1   108	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+    109	      E3
+1   110	0011  FA			     CLI
+1   111	0012  8E D2			     MOV     SS,DX
+1   112	0014  03 E3			     ADD     SP,BX
+1   113	0016  FB			     STI
+    114	0000			     CODE_SEG SEGMENT PARA 'CODE' PUBLIC USE16
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 3
+wtf.asm
+
+
+
+    115				     ASSUME CS:CODE_SEG, DS:DATA_SEG, SS:STACK_SEG
+    116	0000			     MAIN PROC FAR
+    117	0000  1E			  PUSH DS		; initialize DS
+    118	0001  33 C0			  XOR AX, AX		; clears out AX
+    119	0003  50			  PUSH AX		; Pushes Ax (0)	to the stack
+    120	0004  B8 0000s			  MOV AX, DATA_SEG
+    121	0007  8E D8			  MOV DS, AX		; Data Segment memory address in DS
+    122	0009  8B 3E 0000r		  MOV DI, LIST_ORG
+    123
+    124	000D  E8 001F			  Call Display_Info	; Output Data_Seg
+    125
+    126	0010  B4 0E			  mov ah, 0Eh		;print new line	sequence
+    127	0012  B0 0D			  mov al, 0Dh
+    128	0014  CD 10			  int 10h
+    129	0016  B0 0A			  mov al, 0Ah
+    130	0018  CD 10			  int 10h
+    131
+    132	001A  E8 0043			  Call BubbleSort
+    133
+    134	001D  B8 0000s			  MOV AX, DATA_SEG
+    135	0020  8E D8			  MOV DS, AX		; Data Segment memory address in DS
+    136	0022  8B 3E 0000r		  MOV DI, LIST_ORG
+    137	0026  E8 0006			  Call Display_Info
+    138
+    139	0029  B8 4C00			  MOV AX, 4C00h		   ;returns control to DOS
+    140	002C  CD 21			  INT 21h
+    141
+    142	002E  CB		     Ret
+    143
+    144	002F			     MAIN ENDP
+    145
+    146				     ;*****************************************************
+    147				     ;---------------------- Display_Info ------------------
+    148				     ;*****************************************************
+    149
+    150	002F			      DISPLAY_INFO PROC	NEAR
+    151
+    152	002F				 AGAIN2:
+    153	002F  8B F7			 MOV SI,DI		  ; put	beginning entry	offset in SI
+    154	0031  83 C7 02			 ADD DI, 2		  ; move DI offset to beginning	of string
+    155	0034  E8 0012			 Call PRINTSTR		  ; output string of item
+    156
+    157	0037  B2 0A			 MOV DL, 10		  ; output a character return
+    158	0039  B4 02			 MOV AH, 02h		  ; designates output char
+    159	003B  CD 21			 INT 21h		  ; send to DOS
+    160
+    161	003D  8B FE			 MOV DI, SI		  ; put	beginning of entry offset back in DI
+    162	003F  83 3D 00			 CMP [DI],0		  ; if zero, then no more items	in list
+*Warning* wtf.asm(72) Argument needs type override
+    163	0042  74 04			 JE RETT
+    164	0044  8B 3D			 MOV DI, [DI]		  ; get	DI offset to next entry
+    165	0046  EB E7			 JMP AGAIN2
+    166	0048				 RETT:
+    167	0048  C3			 RET
+    168
+    169	0049			      DISPLAY_INFO ENDP
+    170
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 4
+wtf.asm
+
+
+
+    171				     ;*****************************************************
+    172				     ;---------------------- PRINTSTR ------------------
+    173				     ;*****************************************************
+    174	0049			       PRINTSTR	PROC			   ; expecting SI to have string offset
+    175
+    176	0049				  AGAIN3:
+    177	0049  80 3D 20			  CMP byte ptr [DI],20h		   ; check if char is a	space
+    178	004C  74 0B			  JE FINISH
+    179	004E				  CONT:
+    180	004E  8A 15			  MOV DL,[DI]
+    181	0050  B4 02			  MOV AH, 02H			  ; 02H	to display value in DL
+    182	0052  CD 21			  INT 21H			  ; send to DOS
+    183	0054  83 C7 01			  ADD DI, 1			  ; increment to the next character
+    184	0057  EB F0			  JMP AGAIN3
+    185	0059				  FINISH:
+    186	0059  80 7D 01 20		  CMP byte ptr [DI+1],20H	  ; see	if next	char is	a space
+    187	005D  75 EF			  JNE CONT			  ; not	a space, go back and continue
+    188	005F  C3			  RET
+    189
+    190	0060			       PRINTSTR	ENDP
+    191
+    192				     ;*****************************************************
+    193				     ;---------------------- BUBBLE_SORT ------------------
+    194				     ;*****************************************************
+    195
+    196	0060			     BUBBLESORT	PROC
+    197	0060  C6 06 015Cr 01		 MOV [SWAPFLAG],1      ; initialize swapflag so	that will loop at least	once
+    198	0065  8B 36 0000r		 MOV SI, [List_Org]    ; initialize start of sorted list to List_Org
+    199	0069			     OUTTER:
+    200	0069  80 3E 015Cr 00		 CMP [SWAPFLAG], 0     ; check if a swap occured during	last pass, if not done
+    201	006E  74 31			 JE DONE
+    202	0070  C6 06 015Cr 00		 MOV [SWAPFLAG], 0     ; Set SwapFlag to zero to reset
+    203	0075  C7 06 0161r 0000		 MOV PTR0,0
+    204	007B  8B 36 0000r		 MOV SI, [List_Org]
+    205	007F  BA 0008			 MOV DX, 8
+    206	0082			     INNER:
+    207	0082  8B 3C			 MOV DI,[SI]		; Setup	DI for string 2	for loop iteration
+    208	0084  83 EA 01			 SUB DX, 1
+    209	0087  83 FA 00			 CMP DX,0		; See if there is another value	to compare
+    210	008A  74 DD			 JE OUTTER
+    211	008C  89 36 015Dr		 MOV [PTR1],SI
+    212	0090  89 3E 015Fr		 MOV [PTR2],DI
+    213	0094  83 C7 02			 ADD DI, 2	       ; DI+2 is where string2 for compare starts
+    214	0097  83 C6 02			 ADD SI, 2	       ; SI+2 is where string1 for compare starts
+    215	009A  E8 0005			 CALL Compare
+    216					 ; keep	prior ptr
+    217	009D  8B F7			 MOV SI, DI	       ; Setup SI for string 1 for next	loop iteration
+    218	009F  EB E1			 JMP INNER
+    219	00A1			     DONE:
+    220	00A1  C3			 RET
+    221
+    222	00A2			     BUBBLESORT	ENDP
+    223
+    224				     ;*****************************************************
+    225				     ;------------------------ COMPARE -------------------
+    226				     ;*****************************************************
+    227	00A2			     COMPARE PROC NEAR
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 5
+wtf.asm
+
+
+
+    228	00A2  CC			 INT 3
+    229	00A3  1E			 PUSH DS
+    230	00A4  07			 POP ES
+    231	00A5  FC			 CLD			; sets direction of compare right to left
+    232	00A6  B9 0064			 MOV CX,100		; designates how many bytes to compare
+    233	00A9  F3> A6			 REPE CMPSB		; increments both SI & DI as comparing as long as equal
+    234	00AB  7E 10			 JLE EXIT
+    235	00AD  E8 001A			 CALL SWAP
+    236	00B0  8B 3E 015Fr		 MOV DI, [PTR2]
+    237	00B4  89 3E 0161r		 MOV [PTR0], DI
+    238	00B8  8B 3E 015Dr		 MOV DI, [PTR1]
+    239	00BC  C3			 RET
+    240	00BD			      EXIT:
+    241	00BD  8B 3E 015Dr		 MOV DI, [PTR1]
+    242	00C1  89 3E 0161r		 MOV [PTR0], DI
+    243	00C5  8B 3E 015Fr		 MOV DI, [PTR2]
+    244	00C9  C3			 RET
+    245
+    246	00CA			     COMPARE ENDP
+    247
+    248				     ;*****************************************************
+    249				     ;------------------------ SWAP ----------------------
+    250				     ;*****************************************************
+    251	00CA			     SWAP PROC NEAR
+    252	00CA  C6 06 015Cr 01		 MOV [SWAPFLAG], 1	   ;designate that a swap occured
+    253	00CF  8B 3E 015Fr		 MOV DI,[PTR2]
+    254	00D3  8B 36 0161r		 MOV SI,[PTR0]
+    255	00D7  89 3C			 MOV [SI],DI
+    256	00D9  8B 0D			 MOV CX, [DI]
+    257	00DB  8B 36 015Dr		 MOV SI,[PTR1]
+    258	00DF  89 35			 MOV [DI],SI
+    259	00E1  89 0C			 MOV [SI],CX
+    260	00E3  C3		     RET
+    261
+    262	00E4			     SWAP ENDP
+    263				     ;********************************************************
+    264
+    265	00E4			     CODE_SEG ENDS
+    266				     .EXIT
+1   267	0017  B4 4C			     MOV     AH,4Ch
+1   268	0019  CD 21			     INT     21h
+    269				     END MAIN
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "04/02/16"
+??FILENAME			  Text	 "wtf	  "
+??TIME				  Text	 "23:02:43"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 WTF
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 _TEXT:0000
+@WORDSIZE			  Text	 2
+AGAIN2				  Near	 CODE_SEG:002F
+AGAIN3				  Near	 CODE_SEG:0049
+ALM				  Word	 DATA_SEG:0122
+BUBBLESORT			  Near	 CODE_SEG:0060
+CAS				  Word	 DATA_SEG:00B3
+COMPARE				  Near	 CODE_SEG:00A2
+CONT				  Near	 CODE_SEG:004E
+DISPLAY_INFO			  Near	 CODE_SEG:002F
+DONE				  Near	 CODE_SEG:00A1
+EXIT				  Near	 CODE_SEG:00BD
+FINISH				  Near	 CODE_SEG:0059
+HAZ				  Word	 DATA_SEG:0024
+INNER				  Near	 CODE_SEG:0082
+LIST_ORG			  Word	 DATA_SEG:0000
+MAC				  Word	 DATA_SEG:0057
+MAIN				  Far	 CODE_SEG:0000
+OUTTER				  Near	 CODE_SEG:0069
+PEA				  Word	 DATA_SEG:008C
+PIN				  Word	 DATA_SEG:00E6
+PIS				  Word	 DATA_SEG:0002
+PRINTSTR			  Near	 CODE_SEG:0049
+PTR0				  Word	 DATA_SEG:0161
+PTR1				  Word	 DATA_SEG:015D
+PTR2				  Word	 DATA_SEG:015F
+RETT				  Near	 CODE_SEG:0048
+SWAP				  Near	 CODE_SEG:00CA
+SWAPFLAG			  Byte	 DATA_SEG:015C
+
+Macro Name
+
+NUTS
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE_SEG			  16  00E4 Para	  Public  CODE
+DATA_SEG			  16  0163 Para	  none	  DATA
+DGROUP				  Group
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 7
+Symbol Table
+
+
+
+  STACK				  16  1000 Para	  Stack	  STACK
+  _DATA				  16  0000 Word	  Public  DATA
+STACK_SEG			  16  0064 Para	  none	  STACK
+_TEXT				  16  001B Word	  Public  CODE
+Turbo Assembler	 Version 4.1	    04/02/16 23:02:43	    Page 8
+Error Summary
+
+
+
+*Warning* wtf.asm(72) Argument needs type override
+

@@ -1,0 +1,71 @@
+Turbo Assembler	 Version 4.1	    02/21/16 18:03:31	    Page 1
+step6.asm
+
+
+
+      1	0000			     .MODEL MEDIUM
+      2	0000			     .STACK 100H
+      3	0000			     .DATA
+      4	0000			     .CODE
+      5					     .STARTUP
+1     6	0000			     @Startup:
+1     7	0000  BA 0000s			     MOV     DX,@data
+1     8	0003  8E DA			     MOV     DS,DX
+1     9	0005  8C D3			     MOV     BX,SS
+1    10	0007  2B DA			     SUB     BX,DX
+1    11	0009  D1 E3 D1 E3 D1 E3	D1+	     SHL     BX,4
+     12	      E3
+1    13	0011  FA			     CLI
+1    14	0012  8E D2			     MOV     SS,DX
+1    15	0014  03 E3			     ADD     SP,BX
+1    16	0016  FB			     STI
+     17	0017				     MAIN PROC FAR
+     18	0017  B0 18		     L1: MOV AL,18H ;1 What is L1 here?(Hint: address)
+     19	0019  3C 20			     CMP AL,20H	;2
+     20	001B  74 FA			     JE	L1 ;3
+     21	001D  B0 20			     MOV AL,20H	;4
+     22	001F  3C 20			     CMP AL,20H	;5
+     23	0021  74 02			     JE	L2 ;6 What’s the difference between 3 and 6?
+     24	0023  B0 33			     MOV AL,33H	;7 Does	AL change to 33H?
+     25	0025  B0 44			     L2: MOV AL,44H ;8
+     26					     .EXIT
+1    27	0027  B4 4C			     MOV     AH,4Ch
+1    28	0029  CD 21			     INT     21h
+     29	002B				     MAIN ENDP
+     30				     END
+Turbo Assembler	 Version 4.1	    02/21/16 18:03:31	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/21/16"
+??FILENAME			  Text	 "step6	  "
+??TIME				  Text	 "18:03:31"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 STEP6_TEXT
+@CODESIZE			  Text	 1
+@CPU				  Text	 0101H
+@CURSEG				  Text	 STEP6_TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STEP6
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 4
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 STEP6_TEXT:0000
+@WORDSIZE			  Text	 2
+L1				  Near	 STEP6_TEXT:0017
+L2				  Near	 STEP6_TEXT:0025
+MAIN				  Far	 STEP6_TEXT:0017
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  0000 Word	  Public  DATA
+STEP6_TEXT			  16  002B Word	  Public  CODE
+
